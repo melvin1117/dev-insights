@@ -1,0 +1,321 @@
+{
+  "languages": [
+    {
+      "name": "Python",
+      "githubRepository": "python/cpython",
+      "frameworks": [
+        {
+          "name": "Django",
+          "githubRepository": "django/django"
+        },
+        {
+          "name": "Flask",
+          "githubRepository": "pallets/flask"
+        },
+        {
+          "name": "Pyramid",
+          "githubRepository": "Pylons/pyramid"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "Pandas",
+          "githubRepository": "pandas-dev/pandas"
+        },
+        {
+          "name": "NumPy",
+          "githubRepository": "numpy/numpy"
+        },
+        {
+          "name": "Requests",
+          "githubRepository": "psf/requests"
+        }
+      ],
+      "subreddits": ["r/Python"]
+    },
+    {
+      "name": "Java",
+      "githubRepository": "spring-projects/spring-framework",
+      "frameworks": [
+        {
+          "name": "Spring",
+          "githubRepository": "spring-projects/spring-framework"
+        },
+        {
+          "name": "Hibernate",
+          "githubRepository": "hibernate/hibernate-orm"
+        },
+        {
+          "name": "Struts",
+          "githubRepository": "apache/struts"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "Guava",
+          "githubRepository": "google/guava"
+        },
+        {
+          "name": "Jackson",
+          "githubRepository": "FasterXML/jackson"
+        },
+        {
+          "name": "Apache Commons",
+          "githubRepository": "apache/commons-lang"
+        }
+      ],
+      "subreddits": ["r/java"]
+    },
+    {
+      "name": "JavaScript",
+      "githubRepository": "facebook/react",
+      "frameworks": [
+        {
+          "name": "React",
+          "githubRepository": "facebook/react"
+        },
+        {
+          "name": "Angular",
+          "githubRepository": "angular/angular"
+        },
+        {
+          "name": "Vue.js",
+          "githubRepository": "vuejs/vue"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "jQuery",
+          "githubRepository": "jquery/jquery"
+        },
+        {
+          "name": "Lodash",
+          "githubRepository": "lodash/lodash"
+        },
+        {
+          "name": "Axios",
+          "githubRepository": "axios/axios"
+        }
+      ],
+      "subreddits": ["r/javascript", "r/reactjs"]
+    },
+    {
+      "name": "Ruby",
+      "githubRepository": "rails/rails",
+      "frameworks": [
+        {
+          "name": "Ruby on Rails",
+          "githubRepository": "rails/rails"
+        },
+        {
+          "name": "Sinatra",
+          "githubRepository": "sinatra/sinatra"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "RSpec",
+          "githubRepository": "rspec/rspec"
+        },
+        {
+          "name": "Capybara",
+          "githubRepository": "teamcapybara/capybara"
+        }
+      ],
+      "subreddits": ["r/ruby"]
+    },
+    {
+      "name": "Swift",
+      "githubRepository": "apple/swift",
+      "frameworks": [
+        {
+          "name": "UIKit",
+          "githubRepository": "apple/swift"
+        },
+        {
+          "name": "SwiftUI",
+          "githubRepository": "apple/swift"
+        },
+        {
+          "name": "Core Data",
+          "githubRepository": "apple/swift"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "Alamofire",
+          "githubRepository": "Alamofire/Alamofire"
+        },
+        {
+          "name": "Kingfisher",
+          "githubRepository": "onevcat/Kingfisher"
+        }
+      ],
+      "subreddits": ["r/swift"]
+    },
+    {
+      "name": "C++",
+      "githubRepository": "isocpp/CppCoreGuidelines",
+      "frameworks": [
+        {
+          "name": "Qt",
+          "githubRepository": "qt/qtbase"
+        },
+        {
+          "name": "Boost",
+          "githubRepository": "boostorg/boost"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "STL",
+          "githubRepository": "llvm/llvm-project"
+        },
+        {
+          "name": "OpenCV",
+          "githubRepository": "opencv/opencv"
+        }
+      ],
+      "subreddits": ["r/cpp"]
+    },
+    {
+      "name": "PHP",
+      "githubRepository": "laravel/laravel",
+      "frameworks": [
+        {
+          "name": "Laravel",
+          "githubRepository": "laravel/laravel"
+        },
+        {
+          "name": "Symfony",
+          "githubRepository": "symfony/symfony"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "Guzzle",
+          "githubRepository": "guzzle/guzzle"
+        },
+        {
+          "name": "PHPUnit",
+          "githubRepository": "phpunit/phpunit"
+        }
+      ],
+      "subreddits": ["r/php"]
+    },
+    {
+      "name": "C#",
+      "githubRepository": "dotnet/roslyn",
+      "frameworks": [
+        {
+          "name": "ASP.NET",
+          "githubRepository": "aspnet/AspNetCore"
+        },
+        {
+          "name": "Entity Framework",
+          "githubRepository": "dotnet/efcore"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "Newtonsoft.Json",
+          "githubRepository": "JamesNK/Newtonsoft.Json"
+        },
+        {
+          "name": "NUnit",
+          "githubRepository": "nunit/nunit"
+        }
+      ],
+      "subreddits": ["r/csharp"]
+    },
+    {
+      "name": "Go",
+      "githubRepository": "golang/go",
+      "frameworks": [
+        {
+          "name": "Gin",
+          "githubRepository": "gin-gonic/gin"
+        },
+        {
+          "name": "Echo",
+          "githubRepository": "labstack/echo"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "gorilla/mux",
+          "githubRepository": "gorilla/mux"
+        },
+        {
+          "name": "go-sql-driver/mysql",
+          "githubRepository": "go-sql-driver/mysql"
+        }
+      ],
+      "subreddits": ["r/golang"]
+    },
+    {
+      "name": "Rust",
+      "githubRepository": "rust-lang/rust",
+      "frameworks": [
+        {
+          "name": "Rocket",
+          "githubRepository": "rocket/rocket"
+        },
+        {
+          "name": "Actix",
+          "githubRepository": "actix/actix"
+        }
+      ],
+      "libraries": [
+        {
+          "name": "serde",
+          "githubRepository": "serde-rs/serde"
+        },
+        {
+          "name": "tokio",
+          "githubRepository": "tokio-rs/tokio"
+        }
+      ],
+      "subreddits": ["r/rust"]
+    }
+  ],
+  "platforms": {
+    "github": {
+      "repositoryTopics": [
+        "beginner-friendly",
+        "good-first-issue",
+        "help-wanted",
+        "documentation",
+        "machine-learning"
+      ],
+      "issueLabels": [
+        "bug",
+        "enhancement",
+        "feature-request",
+        "help-wanted",
+        "up-for-grabs",
+        "performance"
+      ]
+    },
+    "reddit": {
+      "keywords": {
+        "struggles": ["issue", "problem", "struggle", "error", "frustration"],
+        "recommendations": [
+          "open-source-projects-for-beginners",
+          "looking-for-open-source-projects",
+          "best-programming-resources"
+        ]
+      },
+      "subreddits": [
+        "r/learnprogramming",
+        "r/programming",
+        "r/coding",
+        "r/webdev",
+        "r/AskProgramming"
+      ]
+    },
+    "stackoverflow": {
+      "features": ["unanswered", "popular", "beginner"]
+    }
+  }
+}
