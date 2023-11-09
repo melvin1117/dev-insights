@@ -21,8 +21,9 @@ To run the project on your local machine for development and testing purposes, f
 1. Clone the repository: 
 ```git clone https://github.com/melvin1117/dev-insights.git```
 2. Navigate to the project directory: `cd dev-insights`
-3. Build the Docker images:
-`docker-compose --build`. For next upcoming run use command `docker-compose up`
+3. Add `.env` file at root directory
+4. Build the Docker images:
+`docker-compose build`. For next upcoming run use command `docker-compose up`
 
 
 ## Deployment
