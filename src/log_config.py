@@ -2,6 +2,7 @@ import os
 import logging
 
 DEFAULT_LOGGING_LEVEL = 'INFO'
+LOGS_FOLDER = 'logs'
 
 
 class LoggerConfig:
@@ -33,7 +34,8 @@ class LoggerConfig:
 
         # Create file handler for the module and set level
         log_file_name = f'{self.module_name}.log'
-        file_handler = logging.FileHandler(os.path.join('logs', log_file_name))
+        os.makedirs(os.path.join(os.getcwd(), LOGS_FOLDER), exist_ok=True)
+        file_handler = logging.FileHandler(os.path.join(LOGS_FOLDER, log_file_name))
         file_handler.setLevel(self.logging_level)
 
         # Create a formatter and add it to the handler
