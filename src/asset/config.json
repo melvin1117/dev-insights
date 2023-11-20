@@ -1,321 +1,123 @@
 {
-  "languages": [
-    {
-      "name": "Python",
-      "githubRepository": "python/cpython",
+  "languages": {
+    "JavaScript": {
       "frameworks": [
+        { "name": "Angular", "category": "Front End", "platform": "" },
+        { "name": "React", "category": "Front End", "platform": "" },
+        { "name": "Vue", "category": "Front End", "platform": "" },
+        { "name": "jQuery", "category": "Front End", "platform": "" },
+        { "name": "Express.js", "category": "Back End", "platform": "" },
+        { "name": "Node.js", "category": "Back End", "platform": "" },
+        { "name": "Svelte", "category": "Front End", "platform": "" },
+        { "name": "Next.js", "category": "Full Stack", "platform": "" },
+        { "name": "Nuxt.js", "category": "Full Stack", "platform": "" },
+        { "name": "Ember.js", "category": "Front End", "platform": "" },
+        { "name": "Backbone.js", "category": "Front End", "platform": "" },
+        { "name": "Qwik", "category": "Front End", "platform": "" },
+        { "name": "Deno", "category": "Back End", "platform": "" },
         {
-          "name": "Django",
-          "githubRepository": "django/django"
-        },
-        {
-          "name": "Flask",
-          "githubRepository": "pallets/flask"
-        },
-        {
-          "name": "Pyramid",
-          "githubRepository": "Pylons/pyramid"
+          "name": "React Native",
+          "category": "Full Stack",
+          "platform": "Mobile"
         }
       ],
-      "libraries": [
-        {
-          "name": "Pandas",
-          "githubRepository": "pandas-dev/pandas"
-        },
-        {
-          "name": "NumPy",
-          "githubRepository": "numpy/numpy"
-        },
-        {
-          "name": "Requests",
-          "githubRepository": "psf/requests"
-        }
-      ],
-      "subreddits": ["r/Python"]
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
     },
-    {
-      "name": "Java",
-      "githubRepository": "spring-projects/spring-framework",
+    "Python": {
       "frameworks": [
-        {
-          "name": "Spring",
-          "githubRepository": "spring-projects/spring-framework"
-        },
-        {
-          "name": "Hibernate",
-          "githubRepository": "hibernate/hibernate-orm"
-        },
-        {
-          "name": "Struts",
-          "githubRepository": "apache/struts"
-        }
+        { "name": "Django", "category": "Full Stack", "platform": "" },
+        { "name": "Flask", "category": "Back End", "platform": "" },
+        { "name": "Pandas", "category": "Data", "platform": "" },
+        { "name": "NumPy", "category": "Data", "platform": "" },
+        { "name": "PyTorch", "category": "Data", "platform": "" },
+        { "name": "Requests", "category": "Back End", "platform": "" },
+        { "name": "Asyncio", "category": "Back End", "platform": "" },
+        { "name": "FastAPI", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "Guava",
-          "githubRepository": "google/guava"
-        },
-        {
-          "name": "Jackson",
-          "githubRepository": "FasterXML/jackson"
-        },
-        {
-          "name": "Apache Commons",
-          "githubRepository": "apache/commons-lang"
-        }
-      ],
-      "subreddits": ["r/java"]
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
     },
-    {
-      "name": "JavaScript",
-      "githubRepository": "facebook/react",
+    "Java": {
       "frameworks": [
-        {
-          "name": "React",
-          "githubRepository": "facebook/react"
-        },
-        {
-          "name": "Angular",
-          "githubRepository": "angular/angular"
-        },
-        {
-          "name": "Vue.js",
-          "githubRepository": "vuejs/vue"
-        }
+        { "name": "Spring", "category": "Full Stack", "platform": "" },
+        { "name": "Hibernate", "category": "Back End", "platform": "" },
+        { "name": "Struts", "category": "Back End", "platform": "" },
+        { "name": "Servlets", "category": "Full Stack", "platform": "" },
+        { "name": "JSP", "category": "Full Stack", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "jQuery",
-          "githubRepository": "jquery/jquery"
-        },
-        {
-          "name": "Lodash",
-          "githubRepository": "lodash/lodash"
-        },
-        {
-          "name": "Axios",
-          "githubRepository": "axios/axios"
-        }
-      ],
-      "subreddits": ["r/javascript", "r/reactjs"]
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
     },
-    {
-      "name": "Ruby",
-      "githubRepository": "rails/rails",
+    "C#": {
       "frameworks": [
-        {
-          "name": "Ruby on Rails",
-          "githubRepository": "rails/rails"
-        },
-        {
-          "name": "Sinatra",
-          "githubRepository": "sinatra/sinatra"
-        }
+        { "name": "ASP.NET", "category": "Full Stack", "platform": "" },
+        { "name": "Entity Framework", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "RSpec",
-          "githubRepository": "rspec/rspec"
-        },
-        {
-          "name": "Capybara",
-          "githubRepository": "teamcapybara/capybara"
-        }
-      ],
-      "subreddits": ["r/ruby"]
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
     },
-    {
-      "name": "Swift",
-      "githubRepository": "apple/swift",
+    "Go": {
       "frameworks": [
-        {
-          "name": "UIKit",
-          "githubRepository": "apple/swift"
-        },
-        {
-          "name": "SwiftUI",
-          "githubRepository": "apple/swift"
-        },
-        {
-          "name": "Core Data",
-          "githubRepository": "apple/swift"
-        }
+        { "name": "Gin", "category": "Back End", "platform": "" },
+        { "name": "Echo", "category": "Back End", "platform": "" },
+        { "name": "Beego", "category": "Back End", "platform": "" },
+        { "name": "FastHttp", "category": "Back End", "platform": "" },
+        { "name": "Kit", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "Alamofire",
-          "githubRepository": "Alamofire/Alamofire"
-        },
-        {
-          "name": "Kingfisher",
-          "githubRepository": "onevcat/Kingfisher"
-        }
-      ],
-      "subreddits": ["r/swift"]
+      "category": "Back End",
+      "platform": "Web"
     },
-    {
-      "name": "C++",
-      "githubRepository": "isocpp/CppCoreGuidelines",
+    "Rust": {
       "frameworks": [
-        {
-          "name": "Qt",
-          "githubRepository": "qt/qtbase"
-        },
-        {
-          "name": "Boost",
-          "githubRepository": "boostorg/boost"
-        }
+        { "name": "Actix", "category": "Back End", "platform": "" },
+        { "name": "Rocket", "category": "Back End", "platform": "" },
+        { "name": "Diesel", "category": "Back End", "platform": "" },
+        { "name": "Tokio", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "STL",
-          "githubRepository": "llvm/llvm-project"
-        },
-        {
-          "name": "OpenCV",
-          "githubRepository": "opencv/opencv"
-        }
-      ],
-      "subreddits": ["r/cpp"]
+      "category": "Back End",
+      "platform": "Web"
     },
-    {
-      "name": "PHP",
-      "githubRepository": "laravel/laravel",
+    "Ruby": {
       "frameworks": [
-        {
-          "name": "Laravel",
-          "githubRepository": "laravel/laravel"
-        },
-        {
-          "name": "Symfony",
-          "githubRepository": "symfony/symfony"
-        }
+        { "name": "Ruby on Rails", "category": "Full Stack", "platform": "" },
+        { "name": "Sinatra", "category": "Full Stack", "platform": "" },
+        { "name": "Grape", "category": "Full Stack", "platform": "" },
+        { "name": "Hinami", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "Guzzle",
-          "githubRepository": "guzzle/guzzle"
-        },
-        {
-          "name": "PHPUnit",
-          "githubRepository": "phpunit/phpunit"
-        }
-      ],
-      "subreddits": ["r/php"]
+      "category": "Full Stack",
+      "platform": "Web"
     },
-    {
-      "name": "C#",
-      "githubRepository": "dotnet/roslyn",
+    "C++": {
       "frameworks": [
-        {
-          "name": "ASP.NET",
-          "githubRepository": "aspnet/AspNetCore"
-        },
-        {
-          "name": "Entity Framework",
-          "githubRepository": "dotnet/efcore"
-        }
+        { "name": "Boost", "category": "Back End", "platform": "" },
+        { "name": "STL", "category": "Back End", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "Newtonsoft.Json",
-          "githubRepository": "JamesNK/Newtonsoft.Json"
-        },
-        {
-          "name": "NUnit",
-          "githubRepository": "nunit/nunit"
-        }
-      ],
-      "subreddits": ["r/csharp"]
+      "category": "Back End",
+      "platform": "Desktop"
     },
-    {
-      "name": "Go",
-      "githubRepository": "golang/go",
+    "Swift": {
+      "frameworks": [],
+      "category": "Full Stack",
+      "platform": "Mobile"
+    },
+    "Kotlin": {
+      "frameworks": [],
+      "category": "Back End",
+      "platform": "Mobile"
+    },
+    "TypeScript": {
+      "frameworks": [],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "Dart": {
       "frameworks": [
-        {
-          "name": "Gin",
-          "githubRepository": "gin-gonic/gin"
-        },
-        {
-          "name": "Echo",
-          "githubRepository": "labstack/echo"
-        }
+        { "name": "Flutter", "category": "Front End", "platform": "" },
+        { "name": "Jaspr", "category": "Full Stack", "platform": "" }
       ],
-      "libraries": [
-        {
-          "name": "gorilla/mux",
-          "githubRepository": "gorilla/mux"
-        },
-        {
-          "name": "go-sql-driver/mysql",
-          "githubRepository": "go-sql-driver/mysql"
-        }
-      ],
-      "subreddits": ["r/golang"]
-    },
-    {
-      "name": "Rust",
-      "githubRepository": "rust-lang/rust",
-      "frameworks": [
-        {
-          "name": "Rocket",
-          "githubRepository": "rocket/rocket"
-        },
-        {
-          "name": "Actix",
-          "githubRepository": "actix/actix"
-        }
-      ],
-      "libraries": [
-        {
-          "name": "serde",
-          "githubRepository": "serde-rs/serde"
-        },
-        {
-          "name": "tokio",
-          "githubRepository": "tokio-rs/tokio"
-        }
-      ],
-      "subreddits": ["r/rust"]
-    }
-  ],
-  "platforms": {
-    "github": {
-      "repositoryTopics": [
-        "beginner-friendly",
-        "good-first-issue",
-        "help-wanted",
-        "documentation",
-        "machine-learning"
-      ],
-      "issueLabels": [
-        "bug",
-        "enhancement",
-        "feature-request",
-        "help-wanted",
-        "up-for-grabs",
-        "performance"
-      ]
-    },
-    "reddit": {
-      "keywords": {
-        "struggles": ["issue", "problem", "struggle", "error", "frustration"],
-        "recommendations": [
-          "open-source-projects-for-beginners",
-          "looking-for-open-source-projects",
-          "best-programming-resources"
-        ]
-      },
-      "subreddits": [
-        "r/learnprogramming",
-        "r/programming",
-        "r/coding",
-        "r/webdev",
-        "r/AskProgramming"
-      ]
-    },
-    "stackoverflow": {
-      "features": ["unanswered", "popular", "beginner"]
+      "category": "Full Stack",
+      "platform": "Mobile & Web"
     }
   }
 }
