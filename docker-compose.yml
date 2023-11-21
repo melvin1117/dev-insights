@@ -1,0 +1,107 @@
+version: '3'
+services:
+  # Data miner scraping service
+  data-miner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: data-miner
+    container_name: data-miner
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    networks:
+      - data-insights-network
+    volumes:
+      - ./src:/app
+    command: python /app/run.py ${MODULE_DATA_MINER}
+
+  # MongoDB Service
+  mongo:
+    image: mongo
+    container_name: mongo
+    tty: true
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+    networks:
+      - data-insights-network
+
+  # GUI mongodb service
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    tty: true
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_OPTIONS_EDITORTHEME: "ambiance"
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${DB_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${DB_PASS}
+      ME_CONFIG_BASICAUTH_USERNAME: ${DB_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${DB_PASS}
+    networks:
+      - data-insights-network
+
+  # ETL Scraping Service
+  etl:
+    image: data-miner
+    container_name: etl
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - mongo
+      - elasticsearch
+    env_file:
+      - .env
+    networks:
+      - data-insights-network
+    volumes:
+      - ./src:/app
+    command: python /app/run.py ${MODULE_ETL}
+
+  # Elastic Search service
+  elasticsearch:
+    image: elasticsearch:7.8.1
+    container_name: elasticsearch
+    restart: unless-stopped
+    tty: true
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      ELASTIC_PASSWORD: ${ELASTICSEARCH_PASS}
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - data-insights-network  
+
+  #Kibana service
+  kibana:
+    image: kibana:7.8.1
+    container_name: kibana
+    restart: unless-stopped
+    tty: true
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: ${ELASTICSEARCH_USER}
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASS}
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    networks:
+      - data-insights-network
+
+#Docker Networks
+networks:
+  data-insights-network:
+    driver: bridge
