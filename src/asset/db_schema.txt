@@ -37,7 +37,7 @@
   "visibility": "public",
   "default_branch": "master",
   "score": 1.0,
-  "contributors_gid": []
+  "contributors": [{'gid: int', 'contributions: int', 'type: str', 'site_admin: boolean'}]
 }
 
 

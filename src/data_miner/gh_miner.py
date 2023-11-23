@@ -2,19 +2,18 @@ from os import getenv
 import time
 from queue import Queue
 from datetime import datetime, timedelta
-from github import (
-    Github,
-    GithubException,
-    RateLimitExceededException,
-    UnknownObjectException,
-)
+from utils.api_exceptions_utils import APIException, RateLimitExceededException
 from database.session import Session
 from log_config import LoggerConfig
-from data_miner.concurrent_executor import ConcurrentExecutor
-from functools import wraps
+from utils.concurrent_executor import ConcurrentExecutor
 from typing import Dict, Any, List, Union
-from asset.constants import CONFIG_DATA
+from asset.constants import CONFIG_DATA, AUTH_HEADER_NAME, AUTH_BEARER, GITHUB
 import random
+from utils.api_utils import ApiUtils
+from asset.api_endpoints import GITHUB_ENDPOINTS
+from operator import itemgetter
+from utils.helper_functions import wait_and_retry
+import asyncio
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger
@@ -22,8 +21,7 @@ logger = LoggerConfig(__name__).logger
 MAX_FALLBACK_ATTEMPTS = int(getenv("MAX_FALLBACK_ATTEMPTS", 2))
 GAP_BETWEEN_CALL_SEC = int(getenv("GAP_BETWEEN_CALL_SEC", 60))
 FETCH_PAST_NUM_DAYS = int(getenv("FETCH_PAST_NUM_DAYS", 1100))
-NUM_DAYS_CHUNK_SIZE = int(getenv("NUM_DAYS_CHUNK_SIZE", 30))
-MAX_PAGE_PER_SESSION = int(getenv("MAX_PAGE_PER_SESSION", 10))
+NUM_DAYS_CHUNK_SIZE = int(getenv("NUM_DAYS_CHUNK_SIZE", 7))
 MAX_RECORD_PER_SESSION = int(getenv("MAX_RECORD_PER_SESSION", 150))
 
 
@@ -37,15 +35,12 @@ class GitHubDataMiner:
                 str(item) for item in getenv("GITHUB_API_KEYS").split(",")
             ]
         except Exception as err:
-            logger.error(
-                f"Error while loading github token, please check if GITHUB_API_KEYS is present. {err}"
-            )
-            raise Exception(
-                f"Error while loading github token, please check if GITHUB_API_KEYS is present. {err}"
-            )
+            logger.error(f"Error while loading github token, please check if GITHUB_API_KEYS is present. {err}")
+            raise Exception(f"Error while loading github token, please check if GITHUB_API_KEYS is present. {err}")
 
         self.gh_token_queue = Queue()
-        self.processed_languages = []
+        self.language_fetch_date_info = {}
+        self.run_start_time = None
         for token in self.gh_tokens:
             self.gh_token_queue.put(token)
 
@@ -62,7 +57,7 @@ class GitHubDataMiner:
         self.gh_token_queue.put(token)
 
     def get_formatted_repo_data(
-        self, repo_dict: Dict[str, Any], contributors_gid: List[int], language: str
+        self, repo_dict: Dict[str, Any], contributors: List[Dict[str, Any]], language: str
     ) -> Dict[str, Any]:
         """
         Get formatted repository data.
@@ -101,7 +96,8 @@ class GitHubDataMiner:
             "visibility": repo_dict.get("visibility", ""),
             "default_branch": repo_dict.get("default_branch", ""),
             "score": repo_dict.get("score", -1),
-            "contributors_gid": contributors_gid,
+            "contributors": contributors,
+            "added_at": self.run_start_time
         }
 
     def get_formatted_user_data(
@@ -134,6 +130,7 @@ class GitHubDataMiner:
             "collaboration_count": user_dict.get("collaborators", -1),
             "repo_contributed_gid": [repo_id],
             "languages_contributed": [language],
+            "added_at": self.run_start_time
         }
 
     def get_last_fetched_date(self, language: str) -> datetime:
@@ -141,39 +138,37 @@ class GitHubDataMiner:
         Get the last fetched date for a given language.
         """
         with Session() as session:
+            fallback_last_fetch_date = datetime.utcnow() - timedelta(days=FETCH_PAST_NUM_DAYS)
             try:
-                last_fetched_data = session["gh-tracker"].find_one(
-                    {"language": language}
-                )
+                last_fetched_data = session[GITHUB['tracker']].find_one({"language": language})
                 if last_fetched_data:
+                    if isinstance(last_fetched_data["last_fetched_date"], str):
+                        return datetime.strptime(last_fetched_data["last_fetched_date"])
                     return last_fetched_data["last_fetched_date"]
                 else:
-                    logger.info(
-                        f"Get last fetched {language}: {datetime.utcnow() - timedelta(days=FETCH_PAST_NUM_DAYS)}"
-                    )
-                    return datetime.utcnow() - timedelta(days=FETCH_PAST_NUM_DAYS)
+                    return fallback_last_fetch_date
             except Exception as e:
                 logger.error(f"Error in get_last_fetched_date: {e}. Returning default.")
-                return datetime.utcnow() - timedelta(days=FETCH_PAST_NUM_DAYS)
+                return fallback_last_fetch_date
 
     def update_last_fetched_date(
-        self, language: str, last_fetched_date: datetime
+        self, language: str, last_fetched_date: datetime = None
     ) -> None:
         """
         Update the last fetched date for a given language.
         """
         with Session() as session:
             try:
-                session["gh-tracker"].update_one(
+                if not last_fetched_date:
+                    last_fetched_date = self.get_last_fetched_date(language)  + timedelta(days=NUM_DAYS_CHUNK_SIZE + 1)
+                session[GITHUB['tracker']].update_one(
                     {"language": language},
                     {"$set": {"last_fetched_date": last_fetched_date}},
                     upsert=True,
                 )
-                logger.info(f"Updated last fetched {language}: {last_fetched_date}")
+                logger.info(f"{language}: Updated last fetched to {last_fetched_date}")
             except Exception as e:
-                logger.error(
-                    f"Error in update_last_fetched_date for {language} -> {last_fetched_date}: {e}"
-                )
+                logger.error(f"{language}: Error in update_last_fetched_date while updating to -> {last_fetched_date}: {e}")
 
     def insert_one_record_to_db(self, collection: str, data: Dict[str, Any]) -> None:
         """
@@ -182,7 +177,7 @@ class GitHubDataMiner:
         with Session() as session:
             try:
                 session[collection].insert_one(data)
-                logger.info(f"Data Inserted Successfully to {collection}")
+                logger.debug(f"Data Inserted Successfully to {collection}")
             except Exception as e:
                 logger.error(f"An error occurred while inserting to {collection}: {e}")
 
@@ -223,26 +218,8 @@ class GitHubDataMiner:
             except Exception as e:
                 logger.error(f"An error occurred while finding to {collection}: {e}")
 
-    def wait_and_retry(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            fallback_attempts = 0
-            while fallback_attempts < MAX_FALLBACK_ATTEMPTS:
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    logger.error(f"Error: {e}, {fallback_attempts}")
-                    logger.info(
-                        f"Waiting for {GAP_BETWEEN_CALL_SEC} sec before retrying  {fallback_attempts}"
-                    )
-                    time.sleep(GAP_BETWEEN_CALL_SEC)
-                    fallback_attempts += 1
-            raise Exception(f"Max fallback attempts reached. Unable to recover.")
-
-        return wrapper
-
-    @wait_and_retry
-    def fetch_data(self, language: str) -> str:
+    @wait_and_retry(max_attempts=MAX_FALLBACK_ATTEMPTS, gap_between_calls_sec=GAP_BETWEEN_CALL_SEC, allowed_exceptions=(RateLimitExceededException), method_name='fetch_wrap_up')
+    async def fetch_data(self, language: str) -> str:
         """
         Fetch data for a given language from GitHub API.
 
@@ -252,144 +229,154 @@ class GitHubDataMiner:
         Returns:
             str: A message indicating the completion of the data fetching process.
         """
-        if language in self.processed_languages:
-            logger.warning(f"Stopping {language} from executing twice")
-            return f"Stopping {language} from executing twice"
-        logger.info(f"Start fetching for {language}")
+        logger.info(f"{language}: Start fetching...")
         try:
             token = self.get_next_gh_token()
-            github_instance = Github(token)
+            default_headers = {
+                AUTH_HEADER_NAME: f"{AUTH_BEARER} {token}",
+                "Accept": "application/vnd.github+json",
+                "User-Agent": getenv('APP_NAME')
+            }
+            api = ApiUtils(base_url=GITHUB_ENDPOINTS['base_url'], default_headers=default_headers)
 
-            today = datetime.utcnow()
-            last_fetched_date = self.get_last_fetched_date(language) + timedelta(
-                days=1
-            )  # start from next date
-            if last_fetched_date > today:
-                last_fetched_date = today
-            end_date = last_fetched_date + timedelta(days=NUM_DAYS_CHUNK_SIZE)
-            if end_date > today:
-                end_date = today
+            if language not in self.language_fetch_date_info:
+                today = datetime.utcnow()
+                last_fetched_date = self.get_last_fetched_date(language) + timedelta(days=1)  # start from next date
+                if last_fetched_date > today:
+                    last_fetched_date = today
+                end_date = last_fetched_date + timedelta(days=NUM_DAYS_CHUNK_SIZE)
+                if end_date > today:
+                    end_date = today
+                self.language_fetch_date_info[language] = {
+                    'last_fetched_date': last_fetched_date,
+                    'end_date': end_date
+                }
+            else:
+                last_fetched_date = self.language_fetch_date_info[language]['last_fetched_date']
+                end_date = self.language_fetch_date_info[language]['end_date']
 
-            remaining_records = MAX_RECORD_PER_SESSION
+            records_fetched = 0
             created_query = ""
             if end_date != last_fetched_date:
                 created_query = f"created:{last_fetched_date.strftime('%Y-%m-%d')}..{end_date.strftime('%Y-%m-%d')}"
+            else:
+                created_query = f"created:>={last_fetched_date.strftime('%Y-%m-%d')}"
+                
             query = f"language:{language} {created_query}"
             page = 1  # Start with page 1
-            while remaining_records > 0 and page <= MAX_PAGE_PER_SESSION:
+            repo_query_params = {"q": query, "sort": "stars", "page": page}
+            repositories = await api.get(endpoint = GITHUB_ENDPOINTS['search_repo'], params=repo_query_params)
+            total_repos = repositories['total_count']
+            logger.info(f'{language}: Searched query: {query} with total repo count as {total_repos}')
+            while (total_repos < MAX_RECORD_PER_SESSION and  records_fetched <= total_repos) or (total_repos > MAX_RECORD_PER_SESSION and records_fetched <= MAX_RECORD_PER_SESSION):
                 # Use the created filter and page parameter in the search query
-                logger.info(query)
-                repositories = github_instance.search_repositories(
-                    query=query, sort="stars", page=page
-                )
-                for repo in repositories:
-                    contributors = repo.get_contributors()
-                    contributors_gid = [c.id for c in contributors]
+                if page > 1:
+                    repo_query_params['page'] = page
+                    repositories = await api.get(endpoint = GITHUB_ENDPOINTS['search_repo'], params=repo_query_params)
+                
+                for repo in repositories['items']:
+                    # Get all the contributors for the repo
+                    contributors = await api.get(endpoint=repo['contributors_url'].replace(GITHUB_ENDPOINTS['base_url'], ""))
+                    
+                    contributor_keys_to_retain = ['id', 'contributions', 'type', 'site_admin']
+                    itemgetter_keys = itemgetter(*contributor_keys_to_retain)
+
                     repo_data = self.get_formatted_repo_data(
-                        repo_dict=repo._rawData,
-                        contributors_gid=contributors_gid,
+                        repo_dict=repo,
+                        contributors=list(map(lambda d: dict(zip(contributor_keys_to_retain, itemgetter_keys(d))), contributors)),
                         language=language,
                     )
 
                     # Save repo_data to the database immediately
-                    logger.info(f"Storing repo data to db {language} {repo.id}")
-                    existing_repo = self.find_one("gh-repo", "gid", repo_data["gid"])
+                    existing_repo = self.find_one(GITHUB['repo'], "gid", repo_data["gid"])
                     if not existing_repo:
-                        self.insert_one_record_to_db("gh-repo", repo_data)
-                    logger.info(
-                        f"num of contributors for {language} {repo.id} {len(contributors_gid)}"
-                    )
+                        logger.debug(f"{language}: Storing repo data to db. Repo id: {repo['id']}")
+                        self.insert_one_record_to_db(GITHUB['repo'], repo_data)
+
                     for contributor in contributors:
-                        user = github_instance.get_user_by_id(contributor.id)
-                        user_data = self.get_formatted_user_data(
-                            user_dict=user._rawData, language=language, repo_id=repo.id
-                        )
+                        user = await api.get(endpoint=f"{GITHUB_ENDPOINTS['users']}/{contributor['login']}")
+                        user_data = self.get_formatted_user_data(user_dict=user, language=language, repo_id=repo['id'])
 
                         # Save user_data to the database immediately
-                        logger.info(
-                            f'Checking if user exists in db  {language} {repo.id} {user_data["gid"]}'
-                        )
-                        logger.info(
-                            f'Storing user data to db  {language} {repo.id} {user_data["gid"]}'
-                        )
-                        existing_user = self.find_one(
-                            "gh-users", "gid", user_data["gid"]
-                        )
+                        logger.debug(f'{language}: Checking if user exists in db. Repo id: {repo["id"]} User id:{user_data["gid"]}')
+                        existing_user = self.find_one(GITHUB['user'], "gid", user_data["gid"])
+                        logger.debug(f'{language}: Storing user data to db. Repo id: {repo["id"]} User id:{user_data["gid"]}')
                         if existing_user:
-                            existing_languages = set(
-                                existing_user["languages_contributed"]
-                            )
-                            existing_languages.add(
-                                user_data["languages_contributed"][0]
-                            )
+                            existing_languages = set(existing_user["languages_contributed"])
+                            existing_languages.add(user_data["languages_contributed"][0])
                             existing_repos = set(existing_user["repo_contributed_gid"])
                             existing_repos.add(user_data["repo_contributed_gid"][0])
                             self.update_one_gh_user(
-                                "gh-users",
+                                GITHUB['user'],
                                 "gid",
                                 user_data["gid"],
                                 existing_languages,
                                 existing_repos,
                             )
                         else:
-                            self.insert_one_record_to_db("gh-users", user_data)
+                            self.insert_one_record_to_db(GITHUB['user'], user_data)
 
-                remaining_records -= repositories.totalCount
-
-                if remaining_records > 0:
-                    # If there are more records to fetch, wait for the 1-minute gap
-                    logger.info(
-                        f"Waiting for {GAP_BETWEEN_CALL_SEC} sec before fetching more records  {language} {page} {remaining_records}"
-                    )
-                    time.sleep(GAP_BETWEEN_CALL_SEC)
+                records_fetched += len(repositories['items'])
 
                 # Increment the page for the next iteration
                 page += 1
-                logger.info(
-                    f"page incremented for {language} to {page} {remaining_records}"
-                )
-
-        except RateLimitExceededException as rate_limit_exceeded:
-            reset_time = datetime.utcfromtimestamp(
-                rate_limit_exceeded.rate.reset
-            ).strftime("%Y-%m-%d %H:%M:%S UTC")
-            logger.error(
-                f"Rate limit exceeded. Waiting until {reset_time} before retrying  {language} "
-            )
-            time.sleep(
-                rate_limit_exceeded.rate.remaining + 5
-            )  # Extra 5 seconds to be safe
-            raise
-        except UnknownObjectException as unknown_object_ex:
-            logger.error(f"Unknown object exception: {unknown_object_ex} {language} ")
-            raise
-        except GithubException as github_ex:
-            logger.error(f"GitHub API exception: {github_ex} {language} ")
+                logger.info(f"{language}: Page incremented to {page}. records fetch till now is {records_fetched}")
+        except RateLimitExceededException as e:
+            if e.status == 403:
+                logger.warning(f"{language}: (Retry) Rate Limit Exceeded. with {e}")
+                raise RateLimitExceededException(f"Rate Limit Exceeded. {e}")
+            logger.error(f"{language}: (No Retry) Rate Limit Exceeded.. {e}")
+            raise APIException(f"Rate Limit Exceeded.. {e}")
+        except APIException as e:
+            logger.error(f"{language}: API Exception. {e.status} - {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error: {e} {language} ")
+            logger.error(f"{language}: Unexpected error: {e}")
             raise
         finally:
+            logger.info(f"{language}: In finally. Records fetched: {records_fetched}. Query: {query}")
             if token:
+                logger.info(f"{language}: Token released.")
                 self.release_gh_token(token)
-            logger.info(f"Releasing token for {language} {page} {remaining_records}")
-            if remaining_records and remaining_records != MAX_RECORD_PER_SESSION:
-                self.processed_languages.append(language)
-                # Update the last fetched date for the language in db
-                self.update_last_fetched_date(language, end_date)
-            time.sleep(10)
+
         return language
+
+    def fetch_wrap_up(self, language: str) -> None:
+        """Executes things after fetch for a language is completed
+
+        Args:
+            language (str): Language name for which fetch is completed
+        """
+        # Update the last fetched date for the language in db
+        if language in self.language_fetch_date_info:
+            self.update_last_fetched_date(language, self.language_fetch_date_info[language]['end_date'])
+        else:
+            self.update_last_fetched_date(language)
+
+    def process_language(self, language) -> str:
+         result = asyncio.run(self.fetch_data(language))
+         return result
 
     def start(self) -> None:
         """
         Start the data mining process for multiple languages concurrently.
         """
-
+        time.sleep(60) # to make sure dependent services are up
+        self.run_start_time = datetime.now()
+        # languages = ["Python", "JavaScript", "Java", "Rust"]
         languages = list(CONFIG_DATA["languages"].keys())
         # shuffle the languages so that sequence of execution is different and no priority is given to a language
         random.shuffle(languages)
         concurrent_exec = ConcurrentExecutor(
-            languages, len(self.gh_tokens) - 1, self.fetch_data
+            languages, len(self.gh_tokens) - 1, self.process_language
         )
         concurrent_exec.start()
-        print("Completed from GitHub Miner...")
+        
+        end_time = datetime.now()
+        time_difference = end_time - self.run_start_time
+        hours = time_difference.seconds // 3600
+        minutes = (time_difference.seconds // 60) % 60
+        seconds = time_difference.seconds % 60
+        
+        logger.info(f"Completed from GitHub Mining for Languages: {self.language_fetch_date_info.keys()}")
+        logger.info(f"Time taken to execute the mining {hours} hours, {minutes} minutes, and {seconds} seconds.")

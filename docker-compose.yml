@@ -11,6 +11,8 @@ services:
     tty: true
     depends_on:
       - mongo
+      - mongo-express
+      - elasticsearch
     env_file:
       - .env
     networks:
@@ -62,6 +64,7 @@ services:
     tty: true
     depends_on:
       - mongo
+      - mongo-express
       - elasticsearch
     env_file:
       - .env
@@ -81,6 +84,8 @@ services:
       discovery.type: single-node
       xpack.security.enabled: "true"
       ELASTIC_PASSWORD: ${ELASTICSEARCH_PASS}
+    depends_on:
+      - mongo
     ports:
       - 9200:9200
       - 9300:9300

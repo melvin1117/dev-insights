@@ -45,7 +45,7 @@ class ConcurrentExecutor:
                 task = self.task_queue.get(block=False)
             except Empty:
                 break  # No more tasks in the queue
-            logger.info(f"Pushing {task} to executor...")
+            logger.info(f"{task}: Pushed to executor")
             future = executor.submit(self.exec_func, task)
             future.add_done_callback(lambda x: self.task_queue.task_done())
 
@@ -73,4 +73,4 @@ class ConcurrentExecutor:
             for thread in worker_threads:
                 thread.result()
 
-            print("All concurrent tasks completed!")
+            logger.info("All concurrent tasks completed!")
