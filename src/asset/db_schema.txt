@@ -37,7 +37,8 @@
   "visibility": "public",
   "default_branch": "master",
   "score": 1.0,
-  "contributors": [{'gid: int', 'contributions: int', 'type: str', 'site_admin: boolean'}]
+  "contributors": [{'gid: int', 'contributions: int', 'type: str', 'site_admin: boolean'}],
+  "added_at": Date
 }
 
 
@@ -64,6 +65,7 @@
   "owned_private_repos": 100,
   "disk_usage": 10000,
   "collaborators": 8,
-  "repo_contributed_gid": [],
-  "languages_contributed": []
+  "repo_contributed_gid": [int],
+  "languages_contributed": [str],
+  "added_at": Date
 }
