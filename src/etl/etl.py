@@ -14,6 +14,6 @@ class ETLProcess:
             try:
                 session['user'].insert_one({'name': 'John Doe', 'age': 25})
                 session['user'].update_one({'name': 'John Doe'}, {'$set': {'age': 26}})
-                logger.info("Data Inserted Successfully.")
+                logger.debug("Data Inserted Successfully.")
             except Exception as e:
                 print(f"An error occurred: {e}")

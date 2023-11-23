@@ -16,8 +16,8 @@ class Session:
     """
 
     def __init__(self) -> None:
-        self.host = getenv('DB_HOST')
-        self.port = int(getenv('DB_PORT'))
+        self.host = getenv('DB_HOST', 'mongo')
+        self.port = int(getenv('DB_PORT', '27017'))
         self.database_name = getenv('DB_NAME')
         self.username = getenv('DB_USER')
         self.password = getenv('DB_PASS')

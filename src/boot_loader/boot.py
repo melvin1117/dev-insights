@@ -13,10 +13,10 @@ class Boot:
 
     def start(self):
         logger.info(f"Started execution for {self.module_code} module.")
-        if self.module_code == getenv('MODULE_ETL'):
+        if self.module_code == getenv('MODULE_ETL', 'ETL'):
             etl_process = ETLProcess()
             etl_process.start()
 
-        if self.module_code == getenv('MODULE_DATA_MINER'):
+        if self.module_code == getenv('MODULE_DATA_MINER', 'DATA_MINER'):
             data_miner = DataMiner()
             data_miner.start()
