@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 
 DEFAULT_LOGGING_LEVEL = 'INFO'
 LOGS_FOLDER = 'logs'
@@ -9,7 +10,7 @@ class LoggerConfig:
     """Configure logging for the application based on environment variables."""
     def __init__(self, module_name):
         self.module_name = module_name
-        self.app_name = os.getenv('APP_NAME', 'MyApp')
+        self.app_name = os.getenv('APP_NAME', 'DevInsights')
         self.logging_level = self.get_logging_level()
         self.logger = self.setup_logger()
 
@@ -31,7 +32,11 @@ class LoggerConfig:
         """Sets up and returns a logger for a specific module."""
         logger = logging.getLogger(f'{self.app_name}.{self.module_name}')
         logger.setLevel(self.logging_level)
-
+        
+        # For logging on console
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(self.logging_level)
+        
         # Create file handler for the module and set level
         log_file_name = f'{self.module_name}.log'
         os.makedirs(os.path.join(os.getcwd(), LOGS_FOLDER), exist_ok=True)
@@ -41,10 +46,13 @@ class LoggerConfig:
         # Create a formatter and add it to the handler
         file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                                            datefmt='%Y-%m-%d %H:%M:%S')
+        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(file_formatter)
+        handler.setFormatter(formatter)
 
         # Add the file handler to the logger
         if not logger.handlers:
             logger.addHandler(file_handler)
+            logger.addHandler(handler)
 
         return logger

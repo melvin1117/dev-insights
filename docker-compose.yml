@@ -7,10 +7,12 @@ services:
       dockerfile: Dockerfile
     image: data-miner
     container_name: data-miner
-    restart: unless-stopped
+    # restart: unless-stopped
     tty: true
     depends_on:
       - mongo
+      - mongo-express
+      - elasticsearch
     env_file:
       - .env
     networks:
@@ -31,11 +33,14 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
     networks:
       - data-insights-network
+    volumes:
+      - ./persistant_storage/mongo:/data/db
 
   # GUI mongodb service
   mongo-express:
     image: mongo-express
     container_name: mongo-express
+    restart: unless-stopped
     tty: true
     ports:
       - "8081:8081"
@@ -55,10 +60,11 @@ services:
   etl:
     image: data-miner
     container_name: etl
-    restart: unless-stopped
+    # restart: unless-stopped
     tty: true
     depends_on:
       - mongo
+      - mongo-express
       - elasticsearch
     env_file:
       - .env
@@ -78,11 +84,15 @@ services:
       discovery.type: single-node
       xpack.security.enabled: "true"
       ELASTIC_PASSWORD: ${ELASTICSEARCH_PASS}
+    depends_on:
+      - mongo
     ports:
       - 9200:9200
       - 9300:9300
     networks:
-      - data-insights-network  
+      - data-insights-network
+    volumes:
+      - ./persistant_storage/es:/usr/share/elasticsearch/data
 
   #Kibana service
   kibana:

@@ -36,6 +36,10 @@ To deploy the project on a server or production environment, follow these steps:
 3. Build and start your containers in detached mode:
 `docker-compose up --build -d`
 
+## Restart Container
+
+`docker-compose restart <container-name>`
+
 ## Monitoring & Logging
 
 * Set up monitoring and logging services as required for maintaining the production environment.
