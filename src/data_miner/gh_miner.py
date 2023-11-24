@@ -128,8 +128,7 @@ class GitHubDataMiner:
             "owned_private_repos": user_dict.get("owned_private_repos", -1),
             "disk_usage": user_dict.get("disk_usage", -1),
             "collaboration_count": user_dict.get("collaborators", -1),
-            "repo_contributed_gid": [repo_id],
-            "languages_contributed": [language],
+            "repos_contributed": {language: [repo_id]},
             "added_at": self.run_start_time
         }
 
@@ -198,8 +197,7 @@ class GitHubDataMiner:
         collection: str,
         key: str,
         data: Any,
-        existing_languages: List[str],
-        existing_repos: List[int],
+        repos_contributed: Dict[str, List[int]]
     ) -> None:
         """
         Update one GitHub user record in the database.
@@ -210,8 +208,7 @@ class GitHubDataMiner:
                     {key: data},
                     {
                         "$set": {
-                            "languages_contributed": list(existing_languages),
-                            "repo_contributed_gid": list(existing_repos),
+                            "repos_contributed": repos_contributed,
                         }
                     },
                 )
@@ -295,25 +292,22 @@ class GitHubDataMiner:
 
                     for contributor in contributors:
                         user = await api.get(endpoint=f"{GITHUB_ENDPOINTS['users']}/{contributor['login']}")
-                        user_data = self.get_formatted_user_data(user_dict=user, language=language, repo_id=repo['id'])
 
                         # Save user_data to the database immediately
-                        logger.debug(f'{language}: Checking if user exists in db. Repo id: {repo["id"]} User id:{user_data["gid"]}')
-                        existing_user = self.find_one(GITHUB['user'], "gid", user_data["gid"])
-                        logger.debug(f'{language}: Storing user data to db. Repo id: {repo["id"]} User id:{user_data["gid"]}')
+                        logger.debug(f"{language}: Checking if user exists in db. Repo id: {repo['id']} User id:{user['id']}")
+                        existing_user = self.find_one(GITHUB['user'], 'gid', user['id'])
+                        logger.debug(f"{language}: Storing user data to db. Repo id: {repo['id']} User id:{user['id']}")
                         if existing_user:
-                            existing_languages = set(existing_user["languages_contributed"])
-                            existing_languages.add(user_data["languages_contributed"][0])
-                            existing_repos = set(existing_user["repo_contributed_gid"])
-                            existing_repos.add(user_data["repo_contributed_gid"][0])
-                            self.update_one_gh_user(
-                                GITHUB['user'],
-                                "gid",
-                                user_data["gid"],
-                                existing_languages,
-                                existing_repos,
-                            )
+                            existing_repo_data = existing_user['repos_contributed']
+                            if language in existing_repo_data:
+                                repo_ids_set = set(existing_repo_data[language])
+                                repo_ids_set.add(repo['id'])
+                                existing_repo_data[language] = list(repo_ids_set)
+                            else:
+                                existing_repo_data[language] = [repo['id']]
+                            self.update_one_gh_user(GITHUB['user'], 'gid', user['id'], existing_repo_data)
                         else:
+                            user_data = self.get_formatted_user_data(user_dict=user, language=language, repo_id=repo['id'])
                             self.insert_one_record_to_db(GITHUB['user'], user_data)
 
                 records_fetched += len(repositories['items'])
@@ -334,7 +328,7 @@ class GitHubDataMiner:
             logger.error(f"{language}: Unexpected error: {e}")
             raise
         finally:
-            logger.info(f"{language}: In finally. Records fetched: {records_fetched}. Query: {query}")
+            logger.info(f"{language or 'NO_LANG'}: In finally. Records fetched: {records_fetched or 0}. Query: {query or 'NO_QUERY'}")
             if token:
                 logger.info(f"{language}: Token released.")
                 self.release_gh_token(token)
@@ -367,9 +361,7 @@ class GitHubDataMiner:
         languages = list(CONFIG_DATA["languages"].keys())
         # shuffle the languages so that sequence of execution is different and no priority is given to a language
         random.shuffle(languages)
-        concurrent_exec = ConcurrentExecutor(
-            languages, len(self.gh_tokens) - 1, self.process_language
-        )
+        concurrent_exec = ConcurrentExecutor(languages, len(self.gh_tokens), self.process_language)
         concurrent_exec.start()
         
         end_time = datetime.now()
