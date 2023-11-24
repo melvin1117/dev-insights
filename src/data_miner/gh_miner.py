@@ -328,7 +328,7 @@ class GitHubDataMiner:
             logger.error(f"{language}: Unexpected error: {e}")
             raise
         finally:
-            logger.info(f"{language or 'NO_LANG'}: In finally. Records fetched: {records_fetched or 0}. Query: {query or ''}")
+            logger.info(f"{language or 'NO_LANG'}: In finally. Records fetched: {records_fetched or 0}. Query: {query or 'NO_QUERY'}")
             if token:
                 logger.info(f"{language}: Token released.")
                 self.release_gh_token(token)
