@@ -64,5 +64,10 @@
   "owned_private_repos": 100,
   "disk_usage": 10000,
   "collaborators": 8,
-  "repos_contributed": {"language_name1": [], "language_name2": []}
+  "repos_contributed": {"Java": [123: { contrin: 3}, 45], "language_name2": []}
 }
+0.5
+U1
+User General rating - 
+Java: General rating + repo rating (123) + repo rating (45)
+JS:   
