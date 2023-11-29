@@ -46,7 +46,8 @@ class LoggerConfig:
         # Create a formatter and add it to the handler
         file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                                            datefmt='%Y-%m-%d %H:%M:%S')
-        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                                           datefmt='%Y-%m-%d %H:%M:%S')
         file_handler.setFormatter(file_formatter)
         handler.setFormatter(formatter)
 
