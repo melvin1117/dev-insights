@@ -64,20 +64,44 @@ def normalize_to_1(value: float, min_val: float, max_val: float, delta: float = 
     return normalized_value
 
 
-def calculate_recency_factor(transaction_date: datetime) -> float:
+def calculate_recency_factor(input_date: datetime) -> float:
     """
-    Calculate recency factor based on the transaction date.
+    Calculate recency factor based on the input date.
 
     Args:
-        transaction_date (datetime): The date of the transaction.
+        input_date (datetime): The date field to calculate recency.
 
     Returns:
         float: The calculated recency factor.
     """
-    number_of_days = (datetime.now() - transaction_date).days
+    number_of_days = (datetime.now() - input_date).days
     recency_factor = max(0, min(1, 1 - (number_of_days / 365)))
     return recency_factor
 
+def calculate_oldness_factor(input_date: datetime) -> float:
+    """Calculate oldness factor based on the input date.
+
+    Args:
+        input_date (datetime): the date field to calculate oldness 
+
+    Returns:
+        float: the calculated oldness factor
+    """
+    today = datetime.now()
+
+    # Define the maximum old date (April 2008) - GitHub launch date
+    max_old_date = datetime(2008, 4, 1)
+
+    # Calculate the difference in days between the input date and today
+    days_difference = (today - input_date).days
+
+    # Calculate the difference in days between the maximum old date and today
+    max_old_date_difference = (today - max_old_date).days
+
+    # Calculate the ratio between the two differences to get a value between 0 and 1
+    oldness_factor =  min(days_difference / max_old_date_difference, 1)
+    
+    return oldness_factor
 
 def calculate_sentiment_with_emoticons(text: str) -> float:
     """

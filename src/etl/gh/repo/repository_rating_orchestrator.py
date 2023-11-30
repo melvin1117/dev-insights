@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict
-from etl.repo.repository_analyzer import RepositoryAnalyzer
+from etl.gh.repo.repository_analyzer import RepositoryAnalyzer
 from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
 from asset.constants import REPO_RATING_WEIGHTS
 from log_config import LoggerConfig
@@ -22,7 +22,7 @@ class RepositoryRatingOrchestrator:
         self,
         weights: Dict[str, Dict[str, float]] = REPO_RATING_WEIGHTS,
         workers_count: int = 5,
-        chunk_size: int = 5000,
+        chunk_size: int = 600,
     ) -> None:
         """
         Initialize the RepositoryRatingOrchestrator.
@@ -37,7 +37,6 @@ class RepositoryRatingOrchestrator:
         self.mean_std_dict = None
         self.weights = weights
         self.df = None
-        self.repositories_saved = 0
 
     def fetch_repositories(self) -> int:
         """
@@ -88,7 +87,34 @@ class RepositoryRatingOrchestrator:
         self.mean_std_dict = mean_std_dict
         logger.info(f"Calculated mean std for the given data frame {self.mean_std_dict}")
 
-    def start(self) -> None:
+    def start_normalization(self) -> None:
+        """Start the orchestration of normalization repository rating.
+        """
+        run_start_time = datetime.now()
+        size = self.fetch_repositories()
+        if size == 0:
+            logger.warning("No records fetched")
+        else:
+            # Check if 'rating' is present in the DataFrame
+            if 'rating' in self.df.columns:
+                # Count number of rows with valid rating value
+                rating_row_count = self.df['rating'].notna().sum()
+                if rating_row_count == size:
+                    self.normalize_ratings()
+                    self.df.to_csv("after_normalization.csv", sep=',', encoding='utf-8')
+                    save_count  = self.bulk_save_repo_normalized_rating()
+                    if save_count == size:
+                        logger.info(f"Normalization of rating completed for all repositories. Repositories reflected: {save_count}")
+                    else:
+                        logger.info(f"Normalization not completed for all repositories. Rerun to normalize all. \nRepositories normalized: {save_count}\nRepositories yet to be normalized: {size - save_count}")
+                else:
+                    logger.warning("Rating has not been calculated for all the repositories.")
+            else:
+                logger.warning("Rating has not been calculated for the repositories. Calculate the ratings first and then do the normalization")
+
+        display_execution_time(run_start_time, "Repository rating normalization completed via orchestrator")
+        
+    def start_calculation(self) -> None:
         """
         Start the orchestration of calculating repository rating.
         """
@@ -97,23 +123,25 @@ class RepositoryRatingOrchestrator:
         if size == 0:
             logger.warning("No records fetched")
         else:
-
             self.calculate_mean_std()
-            # Check if 'n_rating' is present in the DataFrame
-            if 'n_rating' in self.df.columns:
-                # Filter rows where 'n_rating' is not present or is NaN
-                self.df = self.df[pd.isna(self.df['n_rating'])]
-
-            if len(self.df.index) > 0:
+            # Check if 'rating' is present in the DataFrame
+            if 'rating' in self.df.columns:
+                # Filter rows where 'rating' is not present or is NaN
+                self.df = self.df[pd.isna(self.df['rating'])]
+            new_df_size = len(self.df.index)
+            if new_df_size > 0:
                 self.run_concurrent_executor()
-                self.df.to_csv("before_normalization.csv", sep=',', encoding='utf-8')
-                self.normalize_ratings()
-                self.df.to_csv("after_normalization.csv", sep=',', encoding='utf-8')
-                self.repositories_saved  = self.bulk_save_repo_rating()
+                if 'rating' in self.df.columns:
+                    self.df.to_csv("before_normalization.csv", sep=',', encoding='utf-8')
+                    rating_row_count = self.df['rating'].notna().sum()
+                    if rating_row_count == new_df_size:
+                        logger.info(f"Rating calculation completed for all repositories. Total repositories reflected: {rating_row_count}")
+                    else:
+                        logger.info(f"Rating calculation only completed for few repositories. Rerun to calculate for all. \nRepositories reflected: {rating_row_count} \nRepositories yet to be calculated: {new_df_size - rating_row_count}")
+                else:
+                    logger.error(f"Unable to calculate rating for any repositories. Debug and retry the execution.")
             else:
-                logger.warning("No records without n_rating")
-
-        logger.info(f"Calculated ratings for total {self.repositories_saved} repositories")
+                logger.warning("No records without rating. Which means all repositories rating has been calculated.")
         display_execution_time(run_start_time, "Repository rating calculation via orchestrator completed")
 
     def run_concurrent_executor(self) -> None:
@@ -145,14 +173,17 @@ class RepositoryRatingOrchestrator:
             axis=1,
         )
     
-    def bulk_save_repo_rating(self) -> int:
-        """Save the ratings to the database
+    def bulk_save_repo_normalized_rating(self) -> int:
+        """Save the normalized ratings to the database
+
+        Returns:
+            int: number of records saved to the database
         """
         with Session() as session:
             # Define a function to create UpdateOne objects
             def create_update(row):
                 filter_query = {'gid': row['gid']}
-                update_query = {"$set": {"rating": row["rating"], "n_rating": row["n_rating"]}}
+                update_query = {"$set": {"n_rating": row["n_rating"]}}
                 return UpdateOne(filter_query, update_query, upsert=False)
 
             # Apply the function to each row of the DataFrame
@@ -162,7 +193,7 @@ class RepositoryRatingOrchestrator:
             result = session[GITHUB['repo']].bulk_write(bulk_operations)
 
             # Return the number of records updated
-            logger.info(f"Updated rating for {result.modified_count} repositories")
+            logger.info(f"Updated normalized rating for {result.modified_count} repositories")
             return result.modified_count
 
     def merge_rating(self, chunk_df: pd.DataFrame):
