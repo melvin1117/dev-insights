@@ -8,15 +8,18 @@ logger = LoggerConfig(__name__).logger
 
 
 class Boot:
-    def __init__(self, module_code):
+    def __init__(self, module_code: str):
+        """Boot constructor
+
+        Args:
+            module_code (str): module code to for which the application is started
+        """
         self.module_code = module_code
 
     def start(self):
         logger.info(f"Started execution for {self.module_code} module.")
-        if self.module_code == getenv('MODULE_ETL', 'ETL'):
-            etl_process = ETLProcess()
-            etl_process.start()
+        if self.module_code.startswith(getenv('MODULE_ETL', 'ETL')):
+            ETLProcess().start(self.module_code)
 
-        if self.module_code == getenv('MODULE_DATA_MINER', 'DATA_MINER'):
-            data_miner = DataMiner()
-            data_miner.start()
+        if self.module_code.startswith(getenv('MODULE_DATA_MINER', 'DATA_MINER')):
+            DataMiner().start(self.module_code)
