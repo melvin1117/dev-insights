@@ -11,7 +11,9 @@ from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
 from os import getenv
 from asset.constants import REPO_DESCRIPTION_RATING_WEIGHTS
 from log_config import LoggerConfig
-
+from database.session import Session
+from pymongo import UpdateOne
+from asset.constants import GITHUB
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger
@@ -20,7 +22,7 @@ RATING_DELTA: float = float(getenv('RATING_DELTA', 0.02))
 
 
 class RepositoryAnalyzer:
-    def __init__(self, df: Any, weights: Dict[str, float], mean_std_dict: Dict[str, Dict[str, float]], workers_count: int = 5, chunk_size: int = 500):
+    def __init__(self, df: Any, weights: Dict[str, float], mean_std_dict: Dict[str, Dict[str, float]], workers_count: int = 5, chunk_size: int = 100):
         """
         Initialize the RepositoryAnalyzer.
 
@@ -37,6 +39,26 @@ class RepositoryAnalyzer:
         self.workers_count = workers_count
         self.chunk_size = chunk_size
 
+    def bulk_save_repo_rating(self) -> int:
+        """Save the ratings to the database
+        """
+        with Session() as session:
+            # Define a function to create UpdateOne objects
+            def create_update(row):
+                filter_query = {'gid': row['gid']}
+                update_query = {"$set": {"rating": row["rating"] }}
+                return UpdateOne(filter_query, update_query, upsert=False)
+
+            # Apply the function to each row of the DataFrame
+            bulk_operations = self.df.apply(create_update, axis=1).tolist()
+
+            # Perform bulk update
+            result = session[GITHUB['repo']].bulk_write(bulk_operations)
+
+            # Return the number of records updated
+            logger.info(f"Updated rating for {result.modified_count} repositories")
+            return result.modified_count
+    
     def analyze(self) -> pd.DataFrame:
         """Analyze the repositories, run concurrent executor, normalize ratings, and optionally plot ratings.
 
@@ -44,8 +66,8 @@ class RepositoryAnalyzer:
             pd.DataFrame: updated dataframe with rating value
         """
         self.run_concurrent_executor()
+        self.bulk_save_repo_rating()
         return self.df
-        # self.plot_ratings()
 
     def analyze_repo_description(self, description: str, weights: Dict[str, float] = REPO_DESCRIPTION_RATING_WEIGHTS) -> float:
         """
@@ -150,15 +172,3 @@ class RepositoryAnalyzer:
                 self.df.at[repository.name, "rating"] = rating
             except Exception as e:
                 logger.error(f"Error processing repository {repository['gid']}: {e}")
-    
-    def plot_ratings(self) -> None:
-        """
-        Plot repository ratings.
-        """
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.df["name"], self.df["n_rating"], marker="o", linestyle="-")
-        plt.xlabel("Repository ID")
-        plt.ylabel("Final Rating")
-        plt.title("Repository Ratings Over ID")
-        plt.grid(True)
-        plt.show(block=True)
