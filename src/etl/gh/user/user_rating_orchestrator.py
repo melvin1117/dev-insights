@@ -34,7 +34,7 @@ class UserRatingOrchestrator:
         self.mean_std_dict = None
         self.workers_count = workers_count
         self.chunk_size = chunk_size
-        self.location_service = LocationGeocodingService()
+        self.location_service = None
         self.user_analyzer = None
 
     def calculate_mean_std(self) -> None:
@@ -99,25 +99,25 @@ class UserRatingOrchestrator:
             self.user_df = pd.DataFrame(user_list)
             return len(user_list)
 
-    # def bulk_save_user_rating(self, user_df: pd.DataFrame) -> int:
-    #     """Save the ratings to the database
-    #     """
-    #     with Session() as session:
-    #         # Define a function to create UpdateOne objects
-    #         def create_update(row):
-    #             filter_query = {'gid': row['gid']}
-    #             update_query = {"$set": {"rating": row["rating"] }} # TODO
-    #             return UpdateOne(filter_query, update_query, upsert=False)
+    def bulk_save_user_normalized_rating(self) -> int:
+        """Save the ratings to the database
+        """
+        with Session() as session:
+            # Define a function to create UpdateOne objects
+            def create_update(row):
+                filter_query = {'gid': row['gid']}
+                update_query = {"$set": {"n_rating": row["n_rating"] }}
+                return UpdateOne(filter_query, update_query, upsert=False)
 
-    #         # Apply the function to each row of the DataFrame
-    #         bulk_operations = user_df.apply(create_update, axis=1).tolist()
+            # Apply the function to each row of the DataFrame
+            bulk_operations = self.user_df.apply(create_update, axis=1).tolist()
 
-    #         # Perform bulk update
-    #         result = session[GITHUB['user']].bulk_write(bulk_operations)
+            # Perform bulk update
+            result = session[GITHUB['user']].bulk_write(bulk_operations)
 
-    #         # Return the number of records updated
-    #         logger.info(f"Updated rating for {result.modified_count} users")
-    #         return result.modified_count
+            # Return the number of records updated
+            logger.info(f"Updated normalized rating for {result.modified_count} users")
+            return result.modified_count
 
     def run_concurrent_executor(self) -> None:
         """
@@ -149,6 +149,8 @@ class UserRatingOrchestrator:
                 self.user_df = self.user_df[pd.isna(self.user_df['rating'])]
             new_user_df_size = len(self.user_df.index)
             if new_user_df_size > 0:
+                self.location_service = LocationGeocodingService()
+                self.user_df.drop(['rating', 'loc'], axis=1, inplace=True)
                 self.user_analyzer = UserRatingAnalyzer(grouped_repo_df=self.grouped_repo_df, mean_std_dict=self.mean_std_dict, repo_lang_mean_dict=self.language_mean_ratings, location_service=self.location_service)
                 logger.info(f"Starting calculation for {new_user_df_size} users.")
                 self.run_concurrent_executor()
@@ -166,25 +168,42 @@ class UserRatingOrchestrator:
         display_execution_time(run_start_time, "User rating calculation via User Rating Orchestrator completed")
 
 
-    # def normalize_user_ratings(self) -> None:
-    #     """
-    #     Normalize repository ratings.
-    #     """
-    #     min_ratings = self.user_df.min()
-    #     max_ratings = self.user_df.max()
-    #     logger.info(f"Min Max rating  wise \n Min Rating: {min_ratings} \n Max Rating: {max_ratings}")
-    #     self.df["n_rating"] = self.df.apply(
-    #         lambda row: normalize_to_1(
-    #             row["rating"], min_ratings[row["language"]], max_ratings[row["language"]]
-    #         ),
-    #         axis=1,
-    #     )
+    def normalize_user_ratings(self) -> None:
+        """
+        Normalize repository ratings.
+        """
+        min_max_lang_dict = {}
+        # Loop through each language and print min_val and max_val
+        for lang in set(lang for r in self.user_df['rating'] for lang in r if lang != 'general'):
+            min_val = min([r.get(lang, {}).get('final_rating', 0) for r in self.user_df['rating'] if lang in r])
+            max_val = max([r.get(lang, {}).get('final_rating', 0) for r in self.user_df['rating'] if lang in r])
+            min_max_lang_dict.update({
+                lang: {
+                    "min": min_val,
+                    "max": max_val
+                }
+            })
 
-    # def start_normalization(self) -> None:
-    #   """Starts the orchestration of the user rating calculation
-    #   """
-    #   run_start_time = datetime.now()
-    #   self.fetch_users()
-    #   self.user_analyzer = UserRatingAnalyzer(grouped_repo_df=self.grouped_repo_df, mean_std_dict=self.mean_std_dict, repo_lang_mean_dict=self.language_mean_ratings, location_service=self.location_service)
-    #   self.run_concurrent_executor()
-    #   display_execution_time(run_start_time, "User rating calculation via User Rating Orchestrator completed")
+        logger.info(f"Min Max value of rating based on language: {min_max_lang_dict}")
+        # Creating the 'n_rating' column
+        self.user_df['n_rating'] = self.user_df['rating'].apply(lambda row: {
+            lang: normalize_to_1(row.get(lang, {}).get('final_rating', 0),
+                                min_val=min_max_lang_dict[lang]['min'],
+                                max_val=min_max_lang_dict[lang]['max'],
+                                delta=0) * 100
+            for lang in set(lang for lang in row if lang != 'general')
+        })
+
+
+    def start_normalization(self) -> None:
+        """Starts the orchestration of the user normalization of rating
+        """
+        run_start_time = datetime.now()
+        total_users = self.fetch_users()
+        self.normalize_user_ratings()
+        updated_user_count = self.bulk_save_user_normalized_rating()
+        if total_users == updated_user_count:
+            logger.info(f"Normalization of user rating completed for all users. Total users: {total_users}")
+        else:
+            logger.info(f"Normalization happened only for few users. Total users: {total_users}, Completed: {updated_user_count}, Pending: {total_users - updated_user_count}")
+        display_execution_time(run_start_time, "User normalized rating calculation via User Rating Orchestrator completed")
