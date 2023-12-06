@@ -24,7 +24,6 @@ class LocationGeocodingService:
         - gmaps: A Google Maps API client instance.
         - cache: A dictionary to store geocoding results.
         """
-        print(GMAP_API_KEY)
         self.gmaps = googlemaps.Client(key=GMAP_API_KEY)
         self.cache: Dict[str, Any] = {}
         self.load_cache_from_file()  # Load cache from file when an instance is created
@@ -39,6 +38,9 @@ class LocationGeocodingService:
         Returns:
             Union[Dict[str, Any], None]: Geo coded location information or None if geocoding fails.
         """
+        if not address:
+            address = random.choice(DEFAULTS)
+        
         if address in self.cache:
             logger.info(f"Using cached result for {address}")
             return self.cache[address]
