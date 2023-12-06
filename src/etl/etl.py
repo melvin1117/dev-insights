@@ -32,6 +32,8 @@ class ETLProcess:
             UserWeightClassifier().start()
         elif module_code == f"{getenv('MODULE_ETL', 'ETL')}.{ETL_TASKS['calculate_user_rating']}":
             UserRatingOrchestrator().start_calculation()
+        elif module_code == f"{getenv('MODULE_ETL', 'ETL')}.{ETL_TASKS['normalize_user_rating']}":
+            UserRatingOrchestrator().start_normalization()
         else:
             logger.warning(f'Invalid module code: {module_code}')
 
@@ -44,5 +46,11 @@ class ETLProcess:
     def clear_user_ratings(self):
         with Session() as session:
             res = session[GITHUB['user']].update_many({}, {'$unset': {'rating': 1, 'loc': 1}})
+            # Display the number of documents modifiedEmpty DataFrame
+            logger.info(f"Cleared ratings for {res.modified_count} user documents")
+
+    def clear_user_n_ratings(self):
+        with Session() as session:
+            res = session[GITHUB['user']].update_many({}, {'$unset': {'n_rating': 1}})
             # Display the number of documents modifiedEmpty DataFrame
             logger.info(f"Cleared ratings for {res.modified_count} user documents")
