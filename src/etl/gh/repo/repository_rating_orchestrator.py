@@ -41,7 +41,6 @@ class RepositoryRatingOrchestrator:
     def fetch_repositories(self) -> int:
         """
         Fetch repositories from MongoDB and create a DataFrame.
-        Connects to MongoDB and fetches repositories with missing ratings.
         Returns:
             int: size of the loaded records
         """

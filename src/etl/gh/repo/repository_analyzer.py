@@ -1,7 +1,6 @@
 from datetime import datetime
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import emoji
 from textblob import TextBlob
 import math
@@ -9,11 +8,10 @@ from typing import Dict, Any
 from utils.helper_functions import detect_language, calculate_sentiment_with_emoticons, load_language_model, z_score_normalization, calculate_recency_factor
 from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
 from os import getenv
-from asset.constants import REPO_DESCRIPTION_RATING_WEIGHTS
 from log_config import LoggerConfig
 from database.session import Session
 from pymongo import UpdateOne
-from asset.constants import GITHUB
+from asset.constants import GITHUB, REPO_DESCRIPTION_RATING_WEIGHTS
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger
@@ -120,7 +118,6 @@ class RepositoryAnalyzer:
         Returns:
             float: Calculated repository rating.
         """
-        # return random.uniform(0, 1)
         language = str(repository['language']).lower()
         mean_std_language = self.mean_std_dict.get(language, {})
 
@@ -159,7 +156,7 @@ class RepositoryAnalyzer:
             return RATING_DELTA
         return rating
 
-    def process_chunk(self, chunk: Any) -> None:
+    def process_chunk(self, chunk: pd.DateOffset) -> None:
         """
         Process a chunk of data and calculate ratings for each repository.
 
