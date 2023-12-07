@@ -3,16 +3,16 @@ import numpy as np
 from typing import Dict
 from etl.gh.user.user_rating_analyzer import UserRatingAnalyzer
 from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
-from asset.constants import REPO_RATING_WEIGHTS
 from log_config import LoggerConfig
 from database.session import Session
-from asset.constants import GITHUB
+from asset.constants import GITHUB, PROFICIENCY, BEGINNER, INTERMEDIATE, EXPERT
 from datetime import datetime
 from utils.helper_functions import display_execution_time, normalize_to_1
 from database.session import Session
 from pymongo import UpdateOne
 from asset.constants import GITHUB
 from utils.location_geocoding_service import LocationGeocodingService
+from sklearn.mixture import GaussianMixture
 
 
 # Initialize the logger for this module
@@ -119,6 +119,26 @@ class UserRatingOrchestrator:
             logger.info(f"Updated normalized rating for {result.modified_count} users")
             return result.modified_count
 
+    def bulk_save_user_proficiency(self) -> int:
+        """Save the proficiency to the database
+        """
+        with Session() as session:
+            # Define a function to create UpdateOne objects
+            def create_update(row):
+                filter_query = {'gid': row['gid']}
+                update_query = {"$set": {"proficiency": row["proficiency"] }}
+                return UpdateOne(filter_query, update_query, upsert=False)
+
+            # Apply the function to each row of the DataFrame
+            bulk_operations = self.user_df.apply(create_update, axis=1).tolist()
+
+            # Perform bulk update
+            result = session[GITHUB['user']].bulk_write(bulk_operations)
+
+            # Return the number of records updated
+            logger.info(f"Updated proficiency for {result.modified_count} users")
+            return result.modified_count
+
     def run_concurrent_executor(self) -> None:
         """
         Run concurrent executor for processing data chunks in parallel.
@@ -207,3 +227,52 @@ class UserRatingOrchestrator:
         else:
             logger.info(f"Normalization happened only for few users. Total users: {total_users}, Completed: {updated_user_count}, Pending: {total_users - updated_user_count}")
         display_execution_time(run_start_time, "User normalized rating calculation via User Rating Orchestrator completed")
+
+    @staticmethod
+    def assign_proficiency(rating: float, thresholds: Dict[str, Dict[str, float]]) -> str:
+        """assigns proficiency based on the provided rating
+
+        Args:
+            rating (float): rating value
+            thresholds (Dict[str, Dict[str, float]]): threshold of each language
+
+        Returns:
+            str: proficiency the rating belongs to 
+        """
+        proficiency = {}
+        for language, rating in rating.items():
+            t1, t2 = thresholds[language]['t1'], thresholds[language]['t2']
+            if rating <= t1:
+                proficiency[language] = BEGINNER
+            elif t1 < rating <= t2:
+                proficiency[language] = INTERMEDIATE
+            else:
+                proficiency[language] = EXPERT
+        return proficiency
+
+    def start_proficiency_calculation(self) -> None:
+        """Start assigning proficiency to the user
+        """
+        run_start_time = datetime.now()
+        total_user_count = self.fetch_users()
+        thresholds = {}
+
+        # Extract unique languages from the DataFrame
+        languages = self.user_df['n_rating'].apply(lambda x: list(x.keys())).explode().unique()
+
+        # Assign proficiency levels to users
+        for language in languages:
+            ratings = self.user_df['n_rating'].apply(lambda x: x.get(language, np.nan)).dropna().values
+            # Fit Gaussian Mixture Model
+            gmm = GaussianMixture(n_components=len(PROFICIENCY), random_state=0)
+            gmm.fit(ratings.reshape(-1, 1))
+            # Get means as thresholds
+            thresholds[language] = dict(zip(['t1', 't2'], sorted(gmm.means_.flatten())))
+        # Apply the function to create the 'proficiency' column
+        self.user_df['proficiency'] = self.user_df['n_rating'].apply(lambda x: UserRatingOrchestrator.assign_proficiency(x, thresholds))
+        records_saved_count = self.bulk_save_user_proficiency()
+        if total_user_count == records_saved_count:
+            logger.info(f"Proficiency assignment of user completed for all users. Total users: {total_user_count}")
+        else:
+            logger.info(f"Proficiency assignment happened only for few users. Total users: {total_user_count}, Completed: {records_saved_count}, Pending: {total_user_count - records_saved_count}")
+        display_execution_time(run_start_time, "User proficiency assignment via User Rating Orchestrator completed")

@@ -35,8 +35,15 @@ ETL_TASKS = {
     "calculate_user_weight": 'CAL_USER_WEIGHT',
     "calculate_user_rating": 'CAL_USER_RATING',
     "normalize_user_rating": 'NORM_USER_RATING',
+    "assign_user_proficiency": 'PROF_USER',
 }
 
 DATA_MINER_TASKS = {
     "mine_gh": 'MINE_GH'
 }
+
+BEGINNER = 'Beginner'
+INTERMEDIATE = 'Intermediate'
+EXPERT = 'Expert'
+
+PROFICIENCY = [BEGINNER, INTERMEDIATE, EXPERT]
