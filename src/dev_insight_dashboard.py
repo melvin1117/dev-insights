@@ -429,7 +429,7 @@ class DeveloperDashboard:
 
         return html.Div(children=[
             html.Nav(children=[
-                html.Img(src=self.b64_image(), alt='Logo', style={'height': '50px', 'width': 'auto', 'margin-right': '10px'}),
+                # html.Img(src=self.b64_image(), alt='Logo', style={'height': '50px', 'width': 'auto', 'margin-right': '10px'}),
                 html.H1(children='Dev Insights Dashboard', style={'flex': '1', 'textAlign': 'center', 'color': 'white'}),
             ], style={'background-color': '#333', 'padding': '10px', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center'}),
 
