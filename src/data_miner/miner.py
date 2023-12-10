@@ -1,6 +1,6 @@
 from os import getenv
 from data_miner.gh_miner import GitHubDataMiner
-from asset.constants import DATA_MINER_TASKS
+from assets.constants import DATA_MINER_TASKS
 from log_config import LoggerConfig
 
 # Initialize the logger for this module

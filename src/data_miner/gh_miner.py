@@ -7,10 +7,10 @@ from database.session import Session
 from log_config import LoggerConfig
 from utils.concurrent_executor import ConcurrentExecutor
 from typing import Dict, Any, List, Union
-from asset.constants import CONFIG_DATA, AUTH_HEADER_NAME, AUTH_BEARER, GITHUB
+from assets.constants import CONFIG_DATA, AUTH_HEADER_NAME, AUTH_BEARER, GITHUB
 import random
 from utils.api_utils import ApiUtils
-from asset.api_endpoints import GITHUB_ENDPOINTS
+from assets.api_endpoints import GITHUB_ENDPOINTS
 from operator import itemgetter
 from utils.helper_functions import wait_and_retry
 import asyncio

@@ -5,12 +5,11 @@ from etl.gh.user.user_rating_analyzer import UserRatingAnalyzer
 from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
 from log_config import LoggerConfig
 from database.session import Session
-from asset.constants import GITHUB, PROFICIENCY, BEGINNER, INTERMEDIATE, EXPERT
+from assets.constants import GITHUB, PROFICIENCY, BEGINNER, INTERMEDIATE, EXPERT
 from datetime import datetime
 from utils.helper_functions import display_execution_time, normalize_to_1
 from database.session import Session
 from pymongo import UpdateOne
-from asset.constants import GITHUB
 from utils.location_geocoding_service import LocationGeocodingService
 from sklearn.mixture import GaussianMixture
 

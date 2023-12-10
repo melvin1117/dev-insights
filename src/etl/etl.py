@@ -3,7 +3,7 @@ from etl.gh.repo.repository_rating_orchestrator import RepositoryRatingOrchestra
 from etl.gh.repo.repo_weight_classifier import RepositoryWeightClassifier
 from database.session import Session
 from os import getenv
-from asset.constants import ETL_TASKS, GITHUB
+from assets.constants import ETL_TASKS, GITHUB
 from etl.gh.user.user_weight_classifier import UserWeightClassifier
 from etl.gh.user.user_rating_orchestrator import UserRatingOrchestrator
 

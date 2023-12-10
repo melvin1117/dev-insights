@@ -3,9 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-import base64
 from plotly.subplots import make_subplots
-from asset.constants import PROFICIENCY_COLORS, DASHBOARD_CHART_THEME, PROFICIENCY, GITHUB
+from assets.constants import PROFICIENCY_COLORS, DASHBOARD_CHART_THEME, PROFICIENCY, GITHUB
 from database.session import Session
 from log_config import LoggerConfig
 
@@ -429,7 +428,6 @@ class DeveloperDashboard:
 
         return html.Div(children=[
             html.Nav(children=[
-                # html.Img(src=self.b64_image(), alt='Logo', style={'height': '50px', 'width': 'auto', 'margin-right': '10px'}),
                 html.H1(children='Dev Insights Dashboard', style={'flex': '1', 'textAlign': 'center', 'color': 'white'}),
             ], style={'background-color': '#333', 'padding': '10px', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center'}),
 
@@ -476,12 +474,6 @@ class DeveloperDashboard:
             dcc.Graph(id='n-rating-chart', figure=self.create_n_rating_chart(), style={'margin': '20px'}),
 
         ], style={'font-family': 'Arial', 'width': '100%', 'background-color': '#f4f4f4', 'margin': '0', 'padding': '0'})
-
-    def b64_image(self):
-        """Encode image to base64."""
-        with open('./assets/otto.png', 'rb') as f:
-            image = f.read()
-        return 'data:image/png;base64,' + base64.b64encode(image).decode('utf-8')
 
     def run_app(self):
         """Run the Dash app."""

@@ -11,7 +11,7 @@ from os import getenv
 from log_config import LoggerConfig
 from database.session import Session
 from pymongo import UpdateOne
-from asset.constants import GITHUB, REPO_DESCRIPTION_RATING_WEIGHTS
+from assets.constants import GITHUB, REPO_DESCRIPTION_RATING_WEIGHTS
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger

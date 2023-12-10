@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import MiniBatchKMeans
 
 # Load JSON data using ujson
-with open("./asset/so/survey_results_public.json", "r") as f:
+with open("./assets/so/survey_results_public.json", "r") as f:
     data = ujson.load(f)
 
 # Convert data to pandas DataFrame

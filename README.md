@@ -11,7 +11,7 @@ Before you begin, ensure you have met the following requirements:
 
 ## Configuration
 
-1. Edit the `src/asset/config.json` file with the necessary configs and `src/asset/api_endpoints.py` for API endpoints.
+1. Edit the `src/assets/config.json` file with the necessary configs and `src/assets/api_endpoints.py` for API endpoints.
 2. `.env` contains environment related configurations
 
 ## Running Locally

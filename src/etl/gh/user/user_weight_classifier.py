@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import json
 from utils.helper_functions import calculate_oldness_factor, display_execution_time
 from utils.file_loader import USER_WEIGHTS_FILE_NAME
-from asset.constants import GITHUB
+from assets.constants import GITHUB
 from database.session import Session
 from log_config import LoggerConfig
 
@@ -66,7 +66,7 @@ class UserWeightClassifier:
             weights = self.analyze_users()
             logger.info(f"Calculated user weights: {weights}")
             # Save weights to a file (adjust the filename as needed)
-            weights_file = f"asset/{USER_WEIGHTS_FILE_NAME}.json"
+            weights_file = f"assets/{USER_WEIGHTS_FILE_NAME}.json"
             with open(weights_file, 'w') as file:
                 json.dump(weights, file, indent=4)
             logger.info(f"Weights saved to {weights_file}")
