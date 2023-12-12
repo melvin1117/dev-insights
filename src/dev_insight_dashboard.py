@@ -20,37 +20,96 @@ class DeveloperDashboard:
         # Fetch and preprocess data
         self.user_df = self.fetch_users()
         self.repo_df = self.fetch_repo()
+        
+        if not ((self.user_df is not None and not self.user_df.empty) or (self.repo_df is not None and not self.repo_df.empty)):
+            self.app.layout = self.create_error_layout()
+        else:
+            self.preprocess_data()
 
-        self.preprocess_data()
+            # Set up initial visualizations
+            self.fig_user_count = self.create_user_count_chart()
+            self.fig_proficiency = self.create_proficiency_chart()
+            self.fig_mean_yoe = self.create_mean_yoe_chart()
+            self.fig_world_map = self.create_world_map_chart()
 
-        # Set up initial visualizations
-        self.fig_user_count = self.create_user_count_chart()
-        self.fig_proficiency = self.create_proficiency_chart()
-        self.fig_mean_yoe = self.create_mean_yoe_chart()
-        self.fig_world_map = self.create_world_map_chart()
-
-        # Set up the layout
-        self.app.layout = self.create_layout()
+            # Set up the layout
+            self.app.layout = self.create_layout()
 
     def fetch_users(self) -> pd.DataFrame:
-        """Fetch user data from MongoDB."""
-        with Session() as session:
-            try:
-                cursor = session[GITHUB['user']].find({})
-                return pd.DataFrame(list(cursor))
-            except Exception as e:
-                logger.error(f"Error fetching users: {e}")
-                raise
+        """Fetch user data from local MongoDB."""
+        try:
+            with Session() as session:
+                try:
+                    cursor = session[GITHUB['user']].find({})
+                    result_df = pd.DataFrame(list(cursor))
+                    
+                    # Check if the result is empty
+                    if result_df.empty:
+                        # Call another function in case of an empty result
+                        return self.fetch_users_fallback()
+                    
+                    return result_df
+                except Exception as e:
+                    # Log the error and call the fallback function
+                    logger.error(f"Error fetching users: {e}")
+                    return self.fetch_users_fallback()
+        except Exception as e:
+            # Log the error and call the fallback function
+            logger.error(f"Error fetching users: {e}")
+            return self.fetch_users_fallback()
+
+    def fetch_users_fallback(self) -> pd.DataFrame:
+        """Fetch user data from MongoDB from the server."""
+        try:
+            with Session(server_host=True) as session:
+                try:
+                    logger.info("Attempting to fallback. Fetching users from server")
+                    cursor = session[GITHUB['user']].find({})
+                    return pd.DataFrame(list(cursor))
+                except Exception as e:
+                    logger.error(f"Error fetching users from server: {e}")
+                    return None
+        except Exception as e:
+            logger.error(f"Error fetching users from server: {e}")
+            return None
 
     def fetch_repo(self) -> pd.DataFrame:
-        """Fetch repo data from MongoDB."""
-        with Session() as session:
-            try:
-                cursor = session[GITHUB['repo']].find({})
-                return pd.DataFrame(list(cursor))
-            except Exception as e:
-                logger.error(f"Error fetching repos: {e}")
-                raise
+        """Fetch repo data from local MongoDB."""
+        try:
+            with Session() as session:
+                try:
+                    cursor = session[GITHUB['repo']].find({})
+                    result_df = pd.DataFrame(list(cursor))
+                    
+                    # Check if the result is empty
+                    if result_df.empty:
+                        # Call another function in case of an empty result
+                        return self.fetch_repo_fallback()
+                    
+                    return result_df
+                except Exception as e:
+                    # Log the error and call the fallback function
+                    logger.error(f"Error fetching repo: {e}")
+                    return self.fetch_repo_fallback()
+        except Exception as e:
+            # Log the error and call the fallback function
+            logger.error(f"Error fetching repo: {e}")
+            return self.fetch_repo_fallback()
+
+    def fetch_repo_fallback(self) -> pd.DataFrame:
+        """Fetch repo data from MongoDB the server."""
+        try:
+            with Session(server_host=True) as session:
+                try:
+                    logger.info("Attempting to fallback. Fetching repo from server")
+                    cursor = session[GITHUB['repo']].find({})
+                    return pd.DataFrame(list(cursor))
+                except Exception as e:
+                    logger.error(f"Error fetching repos from server: {e}")
+                    return None
+        except Exception as e:
+                logger.error(f"Error fetching repos from server: {e}")
+                return None
 
     def preprocess_repo_data(self):
         """Preprocess data for repository analysis."""
@@ -147,7 +206,6 @@ class DeveloperDashboard:
             barmode='group',
             colorway=DASHBOARD_CHART_THEME
         )
-
 
     def create_user_count_chart(self):
         """Create a bar chart for the number of users by programming language."""
@@ -475,6 +533,17 @@ class DeveloperDashboard:
 
         ], style={'font-family': 'Arial', 'width': '100%', 'background-color': '#f4f4f4', 'margin': '0', 'padding': '0'})
 
+    def create_error_layout(self):
+        """Displays error layout
+        """
+        return html.Div(
+            [
+                html.H1("No Data Found", style={"textAlign": "center", "margin-bottom": "10px"}),
+                html.P("Unable to fetch data from the database and from the server. Try running the steps mentioned in the readme and try again.", style={"textAlign": "center"}),
+            ],
+            style={"font-family": "Arial", "height": "100vh", "display": "flex", "flexDirection": "column", "justifyContent": "center"},
+        )
+    
     def run_app(self):
         """Run the Dash app."""
         try:
