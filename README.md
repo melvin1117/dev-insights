@@ -170,7 +170,7 @@ Alternatively, see the GitHub documentation on [creating a pull request](https:/
 
 ## Maintainers
 
-List the maintainers of the project.
+Below are the people who contributed to the project
 1. Shubham Melvin Felix
 2. Uddesh
 3. Abhishek Gavali
