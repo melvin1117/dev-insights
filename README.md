@@ -80,56 +80,63 @@ If you are on **Windows** machine, open the shell script file, copy the command 
 
 
 #### Run GitHub Data Miner module to collect and clean GitHub data and save to database
-*Prerequisite:* None
+&emsp;*Prerequisite:* None
 - Run the `data-miner-gh.sh` shell script file.
 - This will start the execution of the program and start collecting the github data using its API, clean it and save it to mongo database. The program fetches the github data in chunks of 60 days for the past ~2 years from current date (configuration in `.env` file). Every incremental run will fetch 60 days chunk data for all the programming languages selected for the project.
 - We ran incremental loads using CRON jobs.
 
 #### Run Stage 1, Step 1 of the algorithm: GitHub Repository Column Weight Calculation Classifier
-*Prerequisite:* GitHub Data in database collected using data-miner module
+&emsp;*Prerequisite:* GitHub Data in database collected using data-miner module
 
-- Run the `etl-repo-weight.sh` shell script file.
+&emsp;Run the `etl-repo-weight.sh` shell script file.
 
 #### Run Stage 1, Step 2 of the algorithm: GitHub Repository Rating Component
-*Prerequisite:* Stage 1, Step 1 of the algorithm
+&emsp;*Prerequisite:* Stage 1, Step 1 of the algorithm
 
-- Run the `etl-repo-rating.sh` shell script file.
+&emsp;Run the `etl-repo-rating.sh` shell script file.
 
 #### Run Stage 1, Step 3 of the algorithm: GitHub Rating Normalization
 
-*Prerequisite:* Stage 1, Step 2 of the algorithm
+&emsp;*Prerequisite:* Stage 1, Step 2 of the algorithm
 
-- Run the `etl-repo-normalize.sh` shell script file.
+&emsp;Run the `etl-repo-normalize.sh` shell script file.
 
 #### Run Stage 2, Step 1 of the algorithm: GitHub User Column Weight Calculation Classifier
 
-*Prerequisite:* Stage 1 of the algorithm
+&emsp;*Prerequisite:* Stage 1 of the algorithm
 
-- Run the `etl-user-weight.sh` shell script file.
+&emsp;Run the `etl-user-weight.sh` shell script file.
 
 #### Run Stage 2, Step 2 of the algorithm: GitHub User Rating Component
 
-*Prerequisite:* Stage 2, Step 1 of the algorithm
+&emsp;*Prerequisite:* Stage 2, Step 1 of the algorithm
 
-- Run the `etl-user-rating.sh` shell script file.
+&emsp;Run the `etl-user-rating.sh` shell script file.
 
 #### Run Stage 2, Step 3 of the algorithm: GitHub User Rating Normalization
 
-*Prerequisite:* Stage 2, Step 2 of the algorithm
+&emsp;*Prerequisite:* Stage 2, Step 2 of the algorithm
 
-- Run the `etl-user-normalize.sh` shell script file.
+&emsp;Run the `etl-user-normalize.sh` shell script file.
 
 #### Run Stage 2, Step 4 and Stage 3 of the algorithm: Geocoding and Categorizing User proficiency
 
-*Prerequisite:* Stage 2, Step 3 of the algorithm
+&emsp;*Prerequisite:* Stage 2, Step 3 of the algorithm
 
-- Run the `etl-user-proficiency.sh` shell script file.
+&emsp;Run the `etl-user-proficiency.sh` shell script file.
+
+#### Run StackOveflow Jupyter Dashboard
+&emsp;*Prerequisite:*
+- Create virtual environment at root directory, run `python -m venv venv`
+- Install `requirements.txt` packages using `pip install -r requirements.tx`
+
+&emsp;Run the `data_processing.ipynb` under `src/etl/so` directory in IDE of your choice
 
 #### View Dashboard
 
-*Prerequisite:* All the above stages.
+&emsp;*Prerequisite:* All the above stages.
 
-- Once the above stages execution is completed, Open the URL [http://localhost/](http://localhost/) in your browser to view the dashboard.
+&emsp;Once the above stages execution is completed, Open the URL [http://localhost/](http://localhost/) in your browser to view the dashboard.
 
 **By default the dashboard when ran displayed the visualization using the data from the database deployed in cloud.**
 
