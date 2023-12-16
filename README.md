@@ -55,7 +55,7 @@ In the above `.env` file sample, replace the `GITHUB_API_KEYS` and `GMAP_API_KEY
 ## Dataset
 The project requires two dataset - GitHub and Stack Overflow.
 - The GitHub data is fetched using the `data-miner` module ans is saved to the MongoDB database. Below are the steps to run the module to collect the data.
-- The Stack Overflow dataset on the other hand is saved as a zipped file and is part of codebase located at `\src\assets\so\raw` directory and named as `survey_results.zip`. The processed data is saved at location `\src\assets\so` which is done automatically by the code `data_processing.ipynb`.
+- The Stack Overflow dataset on the other hand is saved as a zipped file and is part of codebase located at `/src/assets/so/raw` directory and named as `survey_results.zip`. The processed data is saved at location `/src/assets/so` which is done automatically by the code `data_processing.ipynb`.
 
 
 ## Running Locally
