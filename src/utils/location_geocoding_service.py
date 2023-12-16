@@ -3,14 +3,12 @@ import json
 from typing import Dict, Any, Union
 from os import getenv
 from log_config import LoggerConfig
-import random
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger
 
 GMAP_API_KEY = getenv('GMAP_API_KEY')
-CACHE_FILE_PATH = "asset/geocode_cache.json"
-DEFAULTS = ["Palo Alto","Mountain View", "San Francisco", "Seattle", "Bay area", "California", "Boston", "New york"]
+CACHE_FILE_PATH = "assets/geocode_cache.json"
 
 class LocationGeocodingService:
     """
@@ -39,7 +37,7 @@ class LocationGeocodingService:
             Union[Dict[str, Any], None]: Geo coded location information or None if geocoding fails.
         """
         if not address:
-            address = random.choice(DEFAULTS)
+            return None
         
         if address in self.cache:
             logger.info(f"Using cached result for {address}")
@@ -60,7 +58,7 @@ class LocationGeocodingService:
             return location_obj
         else:
             logger.warning(f"Geocoding failed for {address}, setting default.")
-            return self.geocode(random.choice(DEFAULTS))
+            return None
 
     def save_cache_to_file(self) -> None:
         """

@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import json
 from utils.helper_functions import calculate_recency_factor, display_execution_time
 from utils.file_loader import REPO_WEIGHTS_FILE_NAME
-from asset.constants import GITHUB
+from assets.constants import GITHUB
 from database.session import Session
 from log_config import LoggerConfig
 
@@ -67,7 +67,7 @@ class RepositoryWeightClassifier:
             weights = self.analyze_repositories()
             logger.info(f"Calculated weights: {weights}")
             # Save weights to a file (adjust the filename as needed)
-            weights_file = f"asset/{REPO_WEIGHTS_FILE_NAME}.json"
+            weights_file = f"assets/{REPO_WEIGHTS_FILE_NAME}.json"
             with open(weights_file, 'w') as file:
                 json.dump(weights, file, indent=4)
             logger.info(f"Weights saved to {weights_file}")

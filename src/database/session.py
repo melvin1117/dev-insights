@@ -15,8 +15,13 @@ class Session:
         starting and committing transactions, and exception handling.
     """
 
-    def __init__(self) -> None:
-        self.host = getenv('DB_HOST', 'mongo')
+    def __init__(self, server_host: bool = False) -> None:
+        if server_host:
+            logger.info("External host requested. Fetching from server.")
+            self.host = getenv('DB_SERVER_HOST', 'mongo')
+        else:
+            self.host = getenv('DB_HOST', 'mongo')
+
         self.port = int(getenv('DB_PORT', '27017'))
         self.database_name = getenv('DB_NAME')
         self.username = getenv('DB_USER')

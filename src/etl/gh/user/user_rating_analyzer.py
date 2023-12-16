@@ -11,7 +11,7 @@ from os import getenv
 from log_config import LoggerConfig
 from database.session import Session
 from pymongo import UpdateOne
-from asset.constants import GITHUB, USER_RATING_WEIGHTS, USER_BIO_RATING_WEIGHTS
+from assets.constants import GITHUB, USER_RATING_WEIGHTS, USER_BIO_RATING_WEIGHTS
 from utils.location_geocoding_service import LocationGeocodingService
 
 # Initialize the logger for this module

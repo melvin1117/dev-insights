@@ -3,15 +3,13 @@ import numpy as np
 from typing import Dict
 from etl.gh.repo.repository_analyzer import RepositoryAnalyzer
 from utils.df_chunk_concurrent_executor import DFChunkConcurrentExecutor
-from asset.constants import REPO_RATING_WEIGHTS
+from assets.constants import REPO_RATING_WEIGHTS, GITHUB
 from log_config import LoggerConfig
 from database.session import Session
-from asset.constants import GITHUB
 from datetime import datetime
 from utils.helper_functions import display_execution_time, normalize_to_1
 from database.session import Session
 from pymongo import UpdateOne
-from asset.constants import GITHUB
 
 # Initialize the logger for this module
 logger = LoggerConfig(__name__).logger

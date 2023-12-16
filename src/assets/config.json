@@ -1,0 +1,123 @@
+{
+  "languages": {
+    "JavaScript": {
+      "frameworks": [
+        { "name": "Angular", "category": "Front End", "platform": "" },
+        { "name": "React", "category": "Front End", "platform": "" },
+        { "name": "Vue", "category": "Front End", "platform": "" },
+        { "name": "jQuery", "category": "Front End", "platform": "" },
+        { "name": "Express.js", "category": "Back End", "platform": "" },
+        { "name": "Node.js", "category": "Back End", "platform": "" },
+        { "name": "Svelte", "category": "Front End", "platform": "" },
+        { "name": "Next.js", "category": "Full Stack", "platform": "" },
+        { "name": "Nuxt.js", "category": "Full Stack", "platform": "" },
+        { "name": "Ember.js", "category": "Front End", "platform": "" },
+        { "name": "Backbone.js", "category": "Front End", "platform": "" },
+        { "name": "Qwik", "category": "Front End", "platform": "" },
+        { "name": "Deno", "category": "Back End", "platform": "" },
+        {
+          "name": "React Native",
+          "category": "Full Stack",
+          "platform": "Mobile"
+        }
+      ],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "Python": {
+      "frameworks": [
+        { "name": "Django", "category": "Full Stack", "platform": "" },
+        { "name": "Flask", "category": "Back End", "platform": "" },
+        { "name": "Pandas", "category": "Data", "platform": "" },
+        { "name": "NumPy", "category": "Data", "platform": "" },
+        { "name": "PyTorch", "category": "Data", "platform": "" },
+        { "name": "Requests", "category": "Back End", "platform": "" },
+        { "name": "Asyncio", "category": "Back End", "platform": "" },
+        { "name": "FastAPI", "category": "Back End", "platform": "" }
+      ],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "Java": {
+      "frameworks": [
+        { "name": "Spring", "category": "Full Stack", "platform": "" },
+        { "name": "Hibernate", "category": "Back End", "platform": "" },
+        { "name": "Struts", "category": "Back End", "platform": "" },
+        { "name": "Servlets", "category": "Full Stack", "platform": "" },
+        { "name": "JSP", "category": "Full Stack", "platform": "" }
+      ],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "C#": {
+      "frameworks": [
+        { "name": "ASP.NET", "category": "Full Stack", "platform": "" },
+        { "name": "Entity Framework", "category": "Back End", "platform": "" }
+      ],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "Go": {
+      "frameworks": [
+        { "name": "Gin", "category": "Back End", "platform": "" },
+        { "name": "Echo", "category": "Back End", "platform": "" },
+        { "name": "Beego", "category": "Back End", "platform": "" },
+        { "name": "FastHttp", "category": "Back End", "platform": "" },
+        { "name": "Kit", "category": "Back End", "platform": "" }
+      ],
+      "category": "Back End",
+      "platform": "Web"
+    },
+    "Rust": {
+      "frameworks": [
+        { "name": "Actix", "category": "Back End", "platform": "" },
+        { "name": "Rocket", "category": "Back End", "platform": "" },
+        { "name": "Diesel", "category": "Back End", "platform": "" },
+        { "name": "Tokio", "category": "Back End", "platform": "" }
+      ],
+      "category": "Back End",
+      "platform": "Web"
+    },
+    "Ruby": {
+      "frameworks": [
+        { "name": "Ruby on Rails", "category": "Full Stack", "platform": "" },
+        { "name": "Sinatra", "category": "Full Stack", "platform": "" },
+        { "name": "Grape", "category": "Full Stack", "platform": "" },
+        { "name": "Hinami", "category": "Back End", "platform": "" }
+      ],
+      "category": "Full Stack",
+      "platform": "Web"
+    },
+    "C++": {
+      "frameworks": [
+        { "name": "Boost", "category": "Back End", "platform": "" },
+        { "name": "STL", "category": "Back End", "platform": "" }
+      ],
+      "category": "Back End",
+      "platform": "Desktop"
+    },
+    "Swift": {
+      "frameworks": [],
+      "category": "Full Stack",
+      "platform": "Mobile"
+    },
+    "Kotlin": {
+      "frameworks": [],
+      "category": "Back End",
+      "platform": "Mobile"
+    },
+    "TypeScript": {
+      "frameworks": [],
+      "category": "Full Stack",
+      "platform": "Mobile, Web, & Desktop"
+    },
+    "Dart": {
+      "frameworks": [
+        { "name": "Flutter", "category": "Front End", "platform": "" },
+        { "name": "Jaspr", "category": "Full Stack", "platform": "" }
+      ],
+      "category": "Full Stack",
+      "platform": "Mobile & Web"
+    }
+  }
+}

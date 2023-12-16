@@ -52,6 +52,6 @@ def add_proficiency_level(input_file_path, output_file_path):
         json.dump(data, file, indent=2)
 
 # Example usage
-input_file_path = './asset/so/survey_results_public.json'
-output_file_path = './asset/output_final_result.json'
+input_file_path = './assets/so/survey_results_public.json'
+output_file_path = './assets/output_final_result.json'
 add_proficiency_level(input_file_path, output_file_path)
