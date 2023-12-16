@@ -5,6 +5,8 @@ Identifying Programming Languages Trends based on GitHub and Stack Overflow Surv
 ## Live Demo
 You can visit [here](http://157.230.217.156/) to view the application dashboard.
 
+## GitHub Repository
+You can visit [here](https://github.com/melvin1117/dev-insights) to view the GitHub repository.
 
 ## Prerequisites
 
